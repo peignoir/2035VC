@@ -99,14 +99,14 @@ function App() {
     setScreen('event-setup');
   }, []);
 
-  const handleOpenLanding = useCallback((event: ShareableEvent, logoUrl?: string) => {
+  const handleOpenLanding = useCallback((event: ShareableEvent, hash: string, logoUrl?: string) => {
     setSharedEvent(event);
     setLandingLogoUrl(logoUrl ?? null);
     setScreen('event-landing');
-    // Cache event and set clean URL
+    // Set full hash (shareable URL), also cache for clean-URL visits
     const slug = buildSlug(event.city, event.date);
     putSharedEvent(slug, event).catch(() => {});
-    window.location.hash = `#/${slug}`;
+    window.location.hash = hash;
   }, []);
 
 

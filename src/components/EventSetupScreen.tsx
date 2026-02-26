@@ -11,12 +11,13 @@ import {
 import { loadAndRenderPdf, PdfValidationError } from '../lib/pdfRenderer';
 import { convertWebmToMp4 } from '../lib/convertToMp4';
 import { generateLogo } from '../lib/generateLogo';
+import { buildShareHash } from '../lib/shareUrl';
 import styles from './EventSetupScreen.module.css';
 
 interface EventSetupScreenProps {
   eventId: string;
   onBack: () => void;
-  onOpenLanding?: (event: ShareableEvent, logoUrl?: string) => void;
+  onOpenLanding?: (event: ShareableEvent, hash: string, logoUrl?: string) => void;
 }
 
 export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupScreenProps) {
@@ -298,12 +299,13 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
         socialLinkedin: p.socialLinkedin,
       })),
     };
+    const hash = await buildShareHash(shareable);
     let logoBlob = await getLogoBlob(eventId);
     if (!logoBlob && event) {
       try { logoBlob = await generateLogo(event.name, event.city); } catch { /* ignore */ }
     }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
-    onOpenLanding(shareable, freshLogoUrl);
+    onOpenLanding(shareable, hash, freshLogoUrl);
   }, [event, presentations, onOpenLanding, eventId]);
 
   if (!event) {

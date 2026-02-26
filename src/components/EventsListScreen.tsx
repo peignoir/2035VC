@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import type { IgniteEvent, ShareableEvent } from '../types';
 import { getAllEvents, deleteEvent, getLogoBlob, getEventPresentations } from '../lib/db';
 import { generateLogo } from '../lib/generateLogo';
+import { buildShareHash } from '../lib/shareUrl';
 import styles from './EventsListScreen.module.css';
 
 interface EventsListScreenProps {
   onSelectEvent: (eventId: string) => void;
   onCreateEvent: () => void;
   onRunEvent: (eventId: string) => void;
-  onOpenLanding: (event: ShareableEvent, logoUrl?: string) => void;
+  onOpenLanding: (event: ShareableEvent, hash: string, logoUrl?: string) => void;
 }
 
 export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onOpenLanding }: EventsListScreenProps) {
@@ -84,6 +85,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
         socialLinkedin: p.socialLinkedin,
       })),
     };
+    const hash = await buildShareHash(shareable);
     // Create a fresh blob URL for the landing page — the list screen's
     // cleanup will revoke its own copy when it unmounts.
     let logoBlob = await getLogoBlob(ev.id);
@@ -91,7 +93,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
       try { logoBlob = await generateLogo(ev.name, ev.city); } catch { /* ignore */ }
     }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
-    onOpenLanding(shareable, freshLogoUrl);
+    onOpenLanding(shareable, hash, freshLogoUrl);
   }, [onOpenLanding]);
 
   function formatDate(dateStr: string): string {
