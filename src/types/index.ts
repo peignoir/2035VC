@@ -46,6 +46,7 @@ export interface ShareableEvent {
   link: string;
   presentations: ShareablePresentation[];
   eventId?: string;
+  logo?: string;
 }
 
 // Presentation runtime types (in-memory only)

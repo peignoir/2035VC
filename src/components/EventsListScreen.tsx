@@ -86,14 +86,16 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
         socialLinkedin: p.socialLinkedin,
       })),
     };
-    const slug = buildSlug(shareable.city, shareable.date);
-    publishEvent(slug, shareable).catch(() => {});
-    // Create a fresh blob URL for the landing page — the list screen's
-    // cleanup will revoke its own copy when it unmounts.
+    // Get logo blob and convert to data URL for publishing
     let logoBlob = await getLogoBlob(ev.id);
     if (!logoBlob) {
       try { logoBlob = await generateLogo(ev.name, ev.city); } catch { /* ignore */ }
     }
+    if (logoBlob) {
+      shareable.logo = await blobToDataUrl(logoBlob);
+    }
+    const slug = buildSlug(shareable.city, shareable.date);
+    publishEvent(slug, shareable).catch(() => {});
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, slug, freshLogoUrl);
   }, [onOpenLanding]);
@@ -219,4 +221,13 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
       )}
     </div>
   );
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
 }

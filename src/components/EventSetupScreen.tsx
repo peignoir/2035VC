@@ -300,12 +300,16 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
         socialLinkedin: p.socialLinkedin,
       })),
     };
-    const slug = buildSlug(shareable.city, shareable.date);
-    publishEvent(slug, shareable).catch(() => {});
+    // Get logo blob and convert to data URL for publishing
     let logoBlob = await getLogoBlob(eventId);
     if (!logoBlob && event) {
       try { logoBlob = await generateLogo(event.name, event.city); } catch { /* ignore */ }
     }
+    if (logoBlob) {
+      shareable.logo = await blobToDataUrl(logoBlob);
+    }
+    const slug = buildSlug(shareable.city, shareable.date);
+    publishEvent(slug, shareable).catch(() => {});
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, slug, freshLogoUrl);
   }, [event, presentations, onOpenLanding, eventId]);
@@ -649,4 +653,13 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       </div>
     </div>
   );
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
 }

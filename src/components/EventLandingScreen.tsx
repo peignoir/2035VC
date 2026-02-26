@@ -13,18 +13,16 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
   const shortDate = formatShortDate(event.date);
   const [resolvedLogoUrl, setResolvedLogoUrl] = useState<string | null>(null);
 
-  // Try: uploaded logo from IndexedDB → generated fallback
+  // Try: external prop → embedded data URL → IndexedDB → generated fallback
   useEffect(() => {
-    if (externalLogoUrl) return;
+    if (externalLogoUrl || event.logo) return;
     let revoke = '';
     (async () => {
       try {
-        // Try loading the uploaded logo from IndexedDB (works on same browser)
         let blob: Blob | null | undefined = null;
         if (event.eventId) {
           blob = await getLogoBlob(event.eventId);
         }
-        // Fall back to generated logo
         if (!blob) {
           blob = await generateLogo(event.name, event.city);
         }
@@ -34,9 +32,9 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
       } catch { /* fall through to text fallback */ }
     })();
     return () => { if (revoke) URL.revokeObjectURL(revoke); };
-  }, [externalLogoUrl, event.eventId, event.name, event.city]);
+  }, [externalLogoUrl, event.logo, event.eventId, event.name, event.city]);
 
-  const logoUrl = externalLogoUrl || resolvedLogoUrl;
+  const logoUrl = externalLogoUrl || event.logo || resolvedLogoUrl;
 
   const scrollToReserve = useCallback(() => {
     if (event.link) {
