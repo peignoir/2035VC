@@ -16,7 +16,7 @@ import styles from './EventSetupScreen.module.css';
 interface EventSetupScreenProps {
   eventId: string;
   onBack: () => void;
-  onOpenLanding?: (event: ShareableEvent, hash: string) => void;
+  onOpenLanding?: (event: ShareableEvent, hash: string, logoUrl?: string) => void;
 }
 
 export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupScreenProps) {
@@ -298,8 +298,8 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       })),
     };
     const hash = await buildShareHash(shareable);
-    onOpenLanding(shareable, hash);
-  }, [event, presentations, onOpenLanding]);
+    onOpenLanding(shareable, hash, logoUrl ?? undefined);
+  }, [event, presentations, onOpenLanding, logoUrl]);
 
   if (!event) {
     return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>;

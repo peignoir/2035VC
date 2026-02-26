@@ -9,7 +9,7 @@ interface EventsListScreenProps {
   onSelectEvent: (eventId: string) => void;
   onCreateEvent: () => void;
   onRunEvent: (eventId: string) => void;
-  onOpenLanding: (event: ShareableEvent, hash: string) => void;
+  onOpenLanding: (event: ShareableEvent, hash: string, logoUrl?: string) => void;
 }
 
 export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onOpenLanding }: EventsListScreenProps) {
@@ -85,8 +85,8 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
       })),
     };
     const hash = await buildShareHash(shareable);
-    onOpenLanding(shareable, hash);
-  }, [onOpenLanding]);
+    onOpenLanding(shareable, hash, logoUrls.get(ev.id));
+  }, [onOpenLanding, logoUrls]);
 
   function formatDate(dateStr: string): string {
     if (!dateStr) return '';

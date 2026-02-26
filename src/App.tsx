@@ -11,6 +11,7 @@ function App() {
   const [screen, setScreen] = useState<AppScreen>('events-list');
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [sharedEvent, setSharedEvent] = useState<ShareableEvent | null>(null);
+  const [landingLogoUrl, setLandingLogoUrl] = useState<string | null>(null);
   const [checkingHash, setCheckingHash] = useState(true);
 
   // On mount, check if the URL hash contains shared event data
@@ -51,14 +52,16 @@ function App() {
     setScreen('event-setup');
   }, []);
 
-  const handleOpenLanding = useCallback((event: ShareableEvent, hash: string) => {
+  const handleOpenLanding = useCallback((event: ShareableEvent, hash: string, logoUrl?: string) => {
     setSharedEvent(event);
+    setLandingLogoUrl(logoUrl ?? null);
     setScreen('event-landing');
     window.location.hash = hash;
   }, []);
 
   const handleExitLanding = useCallback(() => {
     setSharedEvent(null);
+    setLandingLogoUrl(null);
     setScreen('events-list');
     window.location.hash = '';
   }, []);
@@ -70,7 +73,7 @@ function App() {
   return (
     <div className={styles.app}>
       {screen === 'event-landing' && sharedEvent && (
-        <EventLandingScreen event={sharedEvent} onBack={handleExitLanding} />
+        <EventLandingScreen event={sharedEvent} logoUrl={landingLogoUrl} onBack={handleExitLanding} />
       )}
       {screen === 'events-list' && (
         <EventsListScreen

@@ -1,61 +1,149 @@
+import { useCallback } from 'react';
 import type { ShareableEvent } from '../types';
 import styles from './EventLandingScreen.module.css';
 
 interface EventLandingScreenProps {
   event: ShareableEvent;
+  logoUrl?: string | null;
   onBack?: () => void;
 }
 
-export function EventLandingScreen({ event, onBack }: EventLandingScreenProps) {
-  const formattedDate = formatDate(event.date);
+export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScreenProps) {
+  const shortDate = formatShortDate(event.date);
+
+  const scrollToReserve = useCallback(() => {
+    if (event.link) {
+      window.open(event.link, '_blank', 'noopener');
+    }
+  }, [event.link]);
 
   return (
-    <div className={styles.container}>
-      {onBack && (
-        <nav className={styles.nav}>
-          <button className={styles.backButton} onClick={onBack}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-            Back
-          </button>
-        </nav>
-      )}
-      <header className={styles.hero}>
-        <h1 className={styles.eventName}>{event.name || 'Cafe 2035'}</h1>
-        <div className={styles.eventMeta}>
-          {event.city && <span>{event.city}</span>}
-          {event.city && formattedDate && <span className={styles.metaDot}>&middot;</span>}
-          {formattedDate && <span>{formattedDate}</span>}
+    <div className={styles.page}>
+      {/* Top nav */}
+      <nav className={styles.topNav}>
+        <div className={styles.navLeft}>
+          {onBack ? (
+            <button className={styles.navBackButton} onClick={onBack}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back
+            </button>
+          ) : (
+            <span className={styles.navBrand}>Cafe2035</span>
+          )}
         </div>
-        <p className={styles.tagline}>The future is in this room</p>
-      </header>
+        <div className={styles.navRight}>
+          <a href="#how-it-works" className={styles.navLink}>How it works</a>
+          <a href="#speakers" className={styles.navLink}>Speakers</a>
+          {event.link && (
+            <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.navCta}>
+              Reserve
+            </a>
+          )}
+        </div>
+      </nav>
 
-      <section className={styles.formatSection}>
-        <h2 className={styles.sectionTitle}>What is a fast PechaKucha?</h2>
-        <div className={styles.formatGrid}>
-          <div className={styles.formatCard}>
-            <span className={styles.formatNumber}>20</span>
-            <span className={styles.formatLabel}>slides</span>
+      {/* Hero */}
+      <section className={styles.hero}>
+        <div className={styles.heroContent}>
+          <div className={styles.heroLeft}>
+            <h1 className={styles.headline}>Make sense of what's coming.</h1>
+            <p className={styles.subhead}>
+              Cafe2035 turns real trends into 5-minute stories—then opens the room for honest conversation.
+            </p>
+            <p className={styles.supportLine}>
+              Stories from the people building it—AI founders, engineers, and sci-fi writers.
+              More than a talk: you'll see the future before it feels normal.
+            </p>
+            <p className={styles.quote}>
+              "How many things have been denied one day, only to become realities the next!"
+              <span className={styles.quoteAuthor}> — Jules Verne</span>
+            </p>
+            <div className={styles.ctaRow}>
+              {event.link && (
+                <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.ctaPrimary}>
+                  Reserve a seat
+                </a>
+              )}
+              <a href={event.link || '#speakers'} target={event.link ? '_blank' : undefined} rel={event.link ? 'noopener noreferrer' : undefined} className={styles.ctaSecondary}>
+                Get updates
+              </a>
+            </div>
+            <div className={styles.chips}>
+              {event.city && <span className={styles.chip}>{event.city}</span>}
+              {shortDate && <span className={styles.chip}>{shortDate}</span>}
+              <span className={styles.chip}>20 x 15s</span>
+              <span className={styles.chip}>Limited seats</span>
+            </div>
           </div>
-          <div className={styles.formatCard}>
-            <span className={styles.formatNumber}>15s</span>
-            <span className={styles.formatLabel}>per slide</span>
-          </div>
-          <div className={styles.formatCard}>
-            <span className={styles.formatNumber}>5</span>
-            <span className={styles.formatLabel}>min of storytelling</span>
+          <div className={styles.heroRight}>
+            {logoUrl ? (
+              <img src={logoUrl} alt={event.name} className={styles.heroLogo} />
+            ) : (
+              <div className={styles.heroLogoFallback}>
+                <span className={styles.heroLogoText}>{event.name || 'Cafe2035'}</span>
+              </div>
+            )}
           </div>
         </div>
-        <p className={styles.formatDescription}>
-          Meet the Jules Verne of our time. Get inspired by solo founders powered by AI,
-          building the future one story at a time. A builders community where the spirit
-          is to dream boldly and create fearlessly.
-        </p>
       </section>
 
+      {/* What you'll get */}
+      <section className={styles.valueSection}>
+        <div className={styles.valueGrid}>
+          <div className={styles.valueCard}>
+            <span className={styles.valueIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+            </span>
+            <h3 className={styles.valueTitle}>Clarity</h3>
+            <p className={styles.valueDesc}>
+              Complex trends distilled into 5-minute stories you can act on Monday morning.
+            </p>
+          </div>
+          <div className={styles.valueCard}>
+            <span className={styles.valueIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </span>
+            <h3 className={styles.valueTitle}>Energy</h3>
+            <p className={styles.valueDesc}>
+              Fast-paced, no filler. Every speaker has exactly 5 minutes to make you think differently.
+            </p>
+          </div>
+          <div className={styles.valueCard}>
+            <span className={styles.valueIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </span>
+            <h3 className={styles.valueTitle}>People</h3>
+            <p className={styles.valueDesc}>
+              Builders, founders, and dreamers in one room. The conversations after are as good as the talks.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how-it-works" className={styles.howSection}>
+        <h2 className={styles.sectionTitle}>How it works</h2>
+        <p className={styles.howLine}>
+          Each speaker gets 20 slides, auto-advancing every 15 seconds. No rambling, no fluff—just the story.
+        </p>
+        <span className={styles.formatBadge}>20 x 15</span>
+      </section>
+
+      {/* Speaker Lineup */}
       {event.presentations.length > 0 && (
-        <section className={styles.speakersSection}>
+        <section id="speakers" className={styles.speakersSection}>
           <h2 className={styles.sectionTitle}>Speaker Lineup</h2>
           <div className={styles.speakerGrid}>
             {event.presentations.map((pres, index) => {
@@ -107,29 +195,30 @@ export function EventLandingScreen({ event, onBack }: EventLandingScreenProps) {
         </section>
       )}
 
-      {event.link && (
-        <section className={styles.ctaSection}>
-          <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
-            Get your ticket
-          </a>
-        </section>
-      )}
-
+      {/* Footer */}
       <footer className={styles.footer}>
         <span className={styles.footerBrand}>2035.VC</span>
       </footer>
+
+      {/* Mobile sticky CTA */}
+      {event.link && (
+        <div className={styles.mobileStickyBar}>
+          <button className={styles.mobileStickyButton} onClick={scrollToReserve}>
+            Reserve a seat
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-function formatDate(dateStr: string): string {
+function formatShortDate(dateStr: string): string {
   if (!dateStr) return '';
   try {
     return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
+      weekday: 'short',
+      month: 'short',
       day: 'numeric',
-      year: 'numeric',
     });
   } catch {
     return dateStr;
