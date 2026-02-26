@@ -50,11 +50,7 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
           <div className={styles.heroLeft}>
             <h1 className={styles.headline}>Make sense of what's coming.</h1>
             <p className={styles.subhead}>
-              Cafe2035 turns real trends into 5-minute stories—then opens the room for honest conversation.
-            </p>
-            <p className={styles.supportLine}>
-              Stories from the people building it—AI founders, engineers, and sci-fi writers.
-              More than a talk: you'll see the future before it feels normal.
+              Stories, not panels: 5-minute glimpses of the future from founders, AI experts, and sci-fi writers. Optimistic or dystopian—come curious, leave challenged, and meet other 2035 builders over a drink or coffee.
             </p>
             <p className={styles.quote}>
               "How many things have been denied one day, only to become realities the next!"
@@ -66,15 +62,10 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
                   Reserve a seat
                 </a>
               )}
-              <a href={event.link || '#speakers'} target={event.link ? '_blank' : undefined} rel={event.link ? 'noopener noreferrer' : undefined} className={styles.ctaSecondary}>
-                Get updates
-              </a>
             </div>
             <div className={styles.chips}>
               {event.city && <span className={styles.chip}>{event.city}</span>}
               {shortDate && <span className={styles.chip}>{shortDate}</span>}
-              <span className={styles.chip}>20 x 15s</span>
-              <span className={styles.chip}>Limited seats</span>
             </div>
           </div>
           <div className={styles.heroRight}>
