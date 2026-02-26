@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect } from 'react';
 import type { ShareableEvent } from '../types';
 import { getLogoBlob } from '../lib/db';
 import { generateLogo } from '../lib/generateLogo';
+import { buildShareUrl } from '../lib/shareUrl';
 import styles from './EventLandingScreen.module.css';
 
 interface EventLandingScreenProps {
@@ -38,11 +39,20 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
 
   const logoUrl = externalLogoUrl || resolvedLogoUrl;
 
+  const [copied, setCopied] = useState(false);
+
   const scrollToReserve = useCallback(() => {
     if (event.link) {
       window.open(event.link, '_blank', 'noopener');
     }
   }, [event.link]);
+
+  const handleShare = useCallback(async () => {
+    const url = await buildShareUrl(event);
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [event]);
 
   return (
     <div className={styles.page}>
@@ -80,6 +90,9 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
                   Reserve a seat
                 </a>
               )}
+              <button className={styles.ctaSecondary} onClick={handleShare}>
+                {copied ? 'Link copied!' : 'Share event'}
+              </button>
             </div>
             <div className={styles.chips}>
               {event.city && <span className={styles.chip}>{event.city}</span>}
