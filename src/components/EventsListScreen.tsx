@@ -87,7 +87,10 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
     const hash = await buildShareHash(shareable);
     // Create a fresh blob URL for the landing page — the list screen's
     // cleanup will revoke its own copy when it unmounts.
-    const logoBlob = await getLogoBlob(ev.id);
+    let logoBlob = await getLogoBlob(ev.id);
+    if (!logoBlob) {
+      try { logoBlob = await generateLogo(ev.name, ev.city); } catch { /* ignore */ }
+    }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, hash, freshLogoUrl);
   }, [onOpenLanding]);

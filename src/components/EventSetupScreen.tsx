@@ -11,6 +11,7 @@ import {
 import { loadAndRenderPdf, PdfValidationError } from '../lib/pdfRenderer';
 import { convertWebmToMp4 } from '../lib/convertToMp4';
 import { buildShareHash } from '../lib/shareUrl';
+import { generateLogo } from '../lib/generateLogo';
 import styles from './EventSetupScreen.module.css';
 
 interface EventSetupScreenProps {
@@ -298,7 +299,10 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       })),
     };
     const hash = await buildShareHash(shareable);
-    const logoBlob = await getLogoBlob(eventId);
+    let logoBlob = await getLogoBlob(eventId);
+    if (!logoBlob && event) {
+      try { logoBlob = await generateLogo(event.name, event.city); } catch { /* ignore */ }
+    }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, hash, freshLogoUrl);
   }, [event, presentations, onOpenLanding, eventId]);
