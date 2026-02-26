@@ -396,7 +396,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
 
         {/* Logo */}
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Chapter Logo</h2>
+          <h2 className={styles.sectionTitle}>Event Logo</h2>
           {logoUrl ? (
             <div className={styles.logoPreview}>
               <img src={logoUrl} alt="Event logo" className={styles.logoImage} />
@@ -410,7 +410,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
-              <span>Drop your chapter logo, or click to browse</span>
+              <span>Drop your event logo, or click to browse</span>
             </div>
           )}
         </section>
