@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { IgniteEvent, ShareableEvent } from '../types';
-import { getAllEvents, deleteEvent, getLogoBlob, getEventPresentations } from '../lib/db';
+import { getAllEvents, deleteEvent, getLogoBlob, getEventPresentations, getRecordingBlob } from '../lib/db';
 import { generateLogo } from '../lib/generateLogo';
 import { buildSlug } from '../lib/shareUrl';
 import { publishEvent } from '../lib/publishEvent';
@@ -96,6 +96,13 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
     }
     const slug = buildSlug(shareable.city, shareable.date);
     publishEvent(slug, shareable, pres.map((p) => p.id)).catch(() => {});
+    // Set local recording object URLs for immediate preview
+    for (let i = 0; i < pres.length; i++) {
+      const recBlob = await getRecordingBlob(pres[i].id);
+      if (recBlob) {
+        shareable.presentations[i].recording = URL.createObjectURL(recBlob);
+      }
+    }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, slug, freshLogoUrl);
   }, [onOpenLanding]);

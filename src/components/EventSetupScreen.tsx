@@ -310,6 +310,13 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
     }
     const slug = buildSlug(shareable.city, shareable.date);
     publishEvent(slug, shareable, presentations.map((p) => p.id)).catch(() => {});
+    // Set local recording object URLs for immediate preview
+    for (let i = 0; i < presentations.length; i++) {
+      const recBlob = await getRecordingBlob(presentations[i].id);
+      if (recBlob) {
+        shareable.presentations[i].recording = URL.createObjectURL(recBlob);
+      }
+    }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, slug, freshLogoUrl);
   }, [event, presentations, onOpenLanding, eventId]);
