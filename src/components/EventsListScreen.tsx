@@ -113,7 +113,8 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Cafe 2035</h1>
-        <p className={styles.subtitle}>The future is in this room</p>
+        <p className={styles.subtitle}>A worldwide movement of builders, dreamers, and storytellers</p>
+        <p className={styles.quote}>"How many things have been denied one day, only to become realities the next!" — Jules Verne</p>
       </header>
 
       {events.length === 0 ? (

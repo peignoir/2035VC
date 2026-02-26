@@ -21,6 +21,17 @@
 .subtitle {
   color: var(--color-text-secondary);
   font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.quote {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.5;
 }
 
 .loading {
