@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import type { ShareableEvent } from '../types';
+import { generateLogo } from '../lib/generateLogo';
 import styles from './EventLandingScreen.module.css';
 
 interface EventLandingScreenProps {
@@ -8,8 +9,26 @@ interface EventLandingScreenProps {
   onBack?: () => void;
 }
 
-export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScreenProps) {
+export function EventLandingScreen({ event, logoUrl: externalLogoUrl, onBack }: EventLandingScreenProps) {
   const shortDate = formatShortDate(event.date);
+  const [generatedLogoUrl, setGeneratedLogoUrl] = useState<string | null>(null);
+
+  // Generate a logo if none was provided
+  useEffect(() => {
+    if (externalLogoUrl) return;
+    let revoke = '';
+    (async () => {
+      try {
+        const blob = await generateLogo(event.name, event.city);
+        const url = URL.createObjectURL(blob);
+        revoke = url;
+        setGeneratedLogoUrl(url);
+      } catch { /* fall through to text fallback */ }
+    })();
+    return () => { if (revoke) URL.revokeObjectURL(revoke); };
+  }, [externalLogoUrl, event.name, event.city]);
+
+  const logoUrl = externalLogoUrl || generatedLogoUrl;
 
   const scrollToReserve = useCallback(() => {
     if (event.link) {
@@ -70,13 +89,15 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
           </div>
           <div className={styles.heroRight}>
             {logoUrl ? (
-              <img src={logoUrl} alt={event.name} className={styles.heroLogo} />
+              <>
+                <img src={logoUrl} alt={event.name} className={styles.heroLogo} />
+                {event.name && <p className={styles.heroChapterName}>{event.name}</p>}
+              </>
             ) : (
               <div className={styles.heroLogoFallback}>
                 <span className={styles.heroLogoText}>{event.name || 'Cafe2035'}</span>
               </div>
             )}
-            {event.name && <p className={styles.heroChapterName}>{event.name}</p>}
           </div>
         </div>
       </section>
