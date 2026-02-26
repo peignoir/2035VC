@@ -8,6 +8,29 @@
   padding: 0 24px;
 }
 
+/* Nav */
+.nav {
+  padding-top: 16px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color var(--transition-fast);
+}
+
+.backButton:hover {
+  color: var(--color-text-primary);
+}
+
 /* Hero */
 .hero {
   text-align: center;

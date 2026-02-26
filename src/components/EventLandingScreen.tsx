@@ -3,13 +3,24 @@ import styles from './EventLandingScreen.module.css';
 
 interface EventLandingScreenProps {
   event: ShareableEvent;
+  onBack?: () => void;
 }
 
-export function EventLandingScreen({ event }: EventLandingScreenProps) {
+export function EventLandingScreen({ event, onBack }: EventLandingScreenProps) {
   const formattedDate = formatDate(event.date);
 
   return (
     <div className={styles.container}>
+      {onBack && (
+        <nav className={styles.nav}>
+          <button className={styles.backButton} onClick={onBack}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+        </nav>
+      )}
       <header className={styles.hero}>
         <h1 className={styles.eventName}>{event.name || 'Cafe 2035'}</h1>
         <div className={styles.eventMeta}>

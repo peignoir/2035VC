@@ -2,20 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import type { IgniteEvent, ShareableEvent } from '../types';
 import { getAllEvents, deleteEvent, getLogoBlob, getEventPresentations } from '../lib/db';
 import { generateLogo } from '../lib/generateLogo';
-import { buildShareUrl } from '../lib/shareUrl';
+import { buildShareHash } from '../lib/shareUrl';
 import styles from './EventsListScreen.module.css';
 
 interface EventsListScreenProps {
   onSelectEvent: (eventId: string) => void;
   onCreateEvent: () => void;
   onRunEvent: (eventId: string) => void;
+  onOpenLanding: (event: ShareableEvent, hash: string) => void;
 }
 
-export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: EventsListScreenProps) {
+export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onOpenLanding }: EventsListScreenProps) {
   const [events, setEvents] = useState<IgniteEvent[]>([]);
   const [logoUrls, setLogoUrls] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [shareToastId, setShareToastId] = useState<string | null>(null);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -66,7 +66,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: E
     onRunEvent(eventId);
   }, [onRunEvent]);
 
-  const handleShare = useCallback(async (e: React.MouseEvent, ev: IgniteEvent) => {
+  const handleOpenPublicPage = useCallback(async (e: React.MouseEvent, ev: IgniteEvent) => {
     e.stopPropagation();
     const pres = await getEventPresentations(ev.id);
     const shareable: ShareableEvent = {
@@ -84,11 +84,9 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: E
         socialLinkedin: p.socialLinkedin,
       })),
     };
-    const url = await buildShareUrl(shareable);
-    await navigator.clipboard.writeText(url);
-    setShareToastId(ev.id);
-    setTimeout(() => setShareToastId(null), 2500);
-  }, []);
+    const hash = await buildShareHash(shareable);
+    onOpenLanding(shareable, hash);
+  }, [onOpenLanding]);
 
   function formatDate(dateStr: string): string {
     if (!dateStr) return '';
@@ -162,36 +160,30 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: E
                   {event.date && <span>{formatDate(event.date)}</span>}
                 </div>
               </div>
-              <button
-                className={styles.runCardButton}
-                onClick={(e) => handleRun(e, event.id)}
-                aria-label="Run event"
-                title="Go Live"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="5 3 19 12 5 21" />
-                </svg>
-              </button>
-              <button
-                className={styles.shareButton}
-                onClick={(e) => handleShare(e, event)}
-                aria-label="Share event"
-                title={shareToastId === event.id ? 'Link copied!' : 'Share'}
-              >
-                {shareToastId === event.id ? (
+              <div className={styles.cardActions}>
+                <button
+                  className={styles.publicPageButton}
+                  onClick={(e) => handleOpenPublicPage(e, event)}
+                  title="Public Page"
+                >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                   </svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="18" cy="5" r="3" />
-                    <circle cx="6" cy="12" r="3" />
-                    <circle cx="18" cy="19" r="3" />
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  Public Page
+                </button>
+                <button
+                  className={styles.runCardButton}
+                  onClick={(e) => handleRun(e, event.id)}
+                  title="Go Live"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21" />
                   </svg>
-                )}
-              </button>
+                  Go Live
+                </button>
+              </div>
               <button
                 className={styles.deleteButton}
                 onClick={(e) => handleDelete(e, event.id, event.name)}

@@ -39,6 +39,7 @@ function App() {
   const handleBackToList = useCallback(() => {
     setActiveEventId(null);
     setScreen('events-list');
+    window.location.hash = '';
   }, []);
 
   const handleRunEvent = useCallback((id: string) => {
@@ -50,6 +51,18 @@ function App() {
     setScreen('event-setup');
   }, []);
 
+  const handleOpenLanding = useCallback((event: ShareableEvent, hash: string) => {
+    setSharedEvent(event);
+    setScreen('event-landing');
+    window.location.hash = hash;
+  }, []);
+
+  const handleExitLanding = useCallback(() => {
+    setSharedEvent(null);
+    setScreen('events-list');
+    window.location.hash = '';
+  }, []);
+
   if (checkingHash) {
     return <div className={styles.app} />;
   }
@@ -57,19 +70,21 @@ function App() {
   return (
     <div className={styles.app}>
       {screen === 'event-landing' && sharedEvent && (
-        <EventLandingScreen event={sharedEvent} />
+        <EventLandingScreen event={sharedEvent} onBack={handleExitLanding} />
       )}
       {screen === 'events-list' && (
         <EventsListScreen
           onSelectEvent={handleSelectEvent}
           onCreateEvent={handleCreateEvent}
           onRunEvent={handleRunEvent}
+          onOpenLanding={handleOpenLanding}
         />
       )}
       {screen === 'event-setup' && activeEventId && (
         <EventSetupScreen
           eventId={activeEventId}
           onBack={handleBackToList}
+          onOpenLanding={handleOpenLanding}
         />
       )}
       {screen === 'event-run' && activeEventId && (

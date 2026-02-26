@@ -1,5 +1,15 @@
 import type { ShareableEvent } from '../types';
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    || 'event';
+}
+
 /** Compress a string using the native CompressionStream API and return base64url */
 async function compressToBase64url(input: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -30,20 +40,30 @@ async function decompressFromBase64url(base64url: string): Promise<string> {
   return new Response(stream).text();
 }
 
-/** Build a shareable URL for an event */
-export async function buildShareUrl(event: ShareableEvent): Promise<string> {
+/** Build a hash fragment for a shareable event: #/live/slug~data */
+export async function buildShareHash(event: ShareableEvent): Promise<string> {
   const json = JSON.stringify(event);
   const encoded = await compressToBase64url(json);
+  const slug = slugify(event.name);
+  return `#/live/${slug}~${encoded}`;
+}
+
+/** Build a full shareable URL */
+export async function buildShareUrl(event: ShareableEvent): Promise<string> {
+  const hash = await buildShareHash(event);
   const base = `${window.location.origin}${import.meta.env.BASE_URL}`;
-  return `${base}#/event/${encoded}`;
+  return `${base}${hash}`;
 }
 
 /** Parse event data from a URL hash. Returns null if not a share URL. */
 export async function parseShareUrl(hash: string): Promise<ShareableEvent | null> {
-  const match = hash.match(/^#\/event\/(.+)$/);
-  if (!match) return null;
+  // Match #/live/slug~data or legacy #/event/data
+  const liveMatch = hash.match(/^#\/live\/[^~]+~(.+)$/);
+  const legacyMatch = hash.match(/^#\/event\/(.+)$/);
+  const encoded = liveMatch?.[1] ?? legacyMatch?.[1];
+  if (!encoded) return null;
   try {
-    const json = await decompressFromBase64url(match[1]);
+    const json = await decompressFromBase64url(encoded);
     return JSON.parse(json) as ShareableEvent;
   } catch {
     return null;

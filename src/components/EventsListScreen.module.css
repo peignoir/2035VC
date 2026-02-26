@@ -108,7 +108,7 @@
 }
 
 .cardInfo {
-  padding: 14px 16px;
+  padding: 14px 16px 8px;
 }
 
 .cardName {
@@ -133,31 +133,61 @@
   opacity: 0.4;
 }
 
-.shareButton {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 28px;
-  height: 28px;
+/* Card action buttons row */
+.cardActions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px 14px;
+}
+
+.publicPageButton {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  background: rgba(0, 0, 0, 0.5);
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: transparent;
   color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  opacity: 0;
-  transition: opacity var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
-.card:hover .shareButton {
-  opacity: 1;
-}
-
-.shareButton:hover {
+.publicPageButton:hover {
   color: var(--color-accent);
-  background: rgba(0, 0, 0, 0.7);
+  border-color: var(--color-accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.runCardButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  background: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.runCardButton:hover {
+  background: var(--color-accent-hover);
+}
+
+.runCardButton svg {
+  margin-left: 1px;
 }
 
 .deleteButton {
@@ -185,33 +215,6 @@
 .deleteButton:hover {
   color: var(--color-error);
   background: rgba(0, 0, 0, 0.7);
-}
-
-.runCardButton {
-  position: absolute;
-  bottom: 12px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: var(--color-accent);
-  color: white;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.runCardButton:hover {
-  background: var(--color-accent-hover);
-  transform: scale(1.1);
-}
-
-.runCardButton svg {
-  margin-left: 2px;
 }
 
 /* New event card */

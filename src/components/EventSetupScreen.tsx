@@ -10,15 +10,16 @@ import {
 } from '../lib/db';
 import { loadAndRenderPdf, PdfValidationError } from '../lib/pdfRenderer';
 import { convertWebmToMp4 } from '../lib/convertToMp4';
-import { buildShareUrl } from '../lib/shareUrl';
+import { buildShareHash } from '../lib/shareUrl';
 import styles from './EventSetupScreen.module.css';
 
 interface EventSetupScreenProps {
   eventId: string;
   onBack: () => void;
+  onOpenLanding?: (event: ShareableEvent, hash: string) => void;
 }
 
-export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
+export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupScreenProps) {
   const [event, setEvent] = useState<IgniteEvent | null>(null);
   const [presentations, setPresentations] = useState<EventPresentation[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -27,7 +28,6 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
   const [pdfProgress, setPdfProgress] = useState(0);
   const [recordingUrls, setRecordingUrls] = useState<Map<string, string>>(new Map());
   const [convertingMp4, setConvertingMp4] = useState<string | null>(null); // presId being converted
-  const [shareToast, setShareToast] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Load event data
@@ -280,8 +280,8 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
     await reorderPresentations(eventId, orderedIds);
   }, [presentations, eventId]);
 
-  const handleShare = useCallback(async () => {
-    if (!event) return;
+  const handleOpenPublicPage = useCallback(async () => {
+    if (!event || !onOpenLanding) return;
     const shareable: ShareableEvent = {
       name: event.name,
       city: event.city,
@@ -297,11 +297,9 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
         socialLinkedin: p.socialLinkedin,
       })),
     };
-    const url = await buildShareUrl(shareable);
-    await navigator.clipboard.writeText(url);
-    setShareToast(true);
-    setTimeout(() => setShareToast(false), 2500);
-  }, [event, presentations]);
+    const hash = await buildShareHash(shareable);
+    onOpenLanding(shareable, hash);
+  }, [event, presentations, onOpenLanding]);
 
   if (!event) {
     return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>;
@@ -316,16 +314,16 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
           </svg>
           Gatherings
         </button>
-        <button className={styles.shareButton} onClick={handleShare}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
-          {shareToast ? 'Link copied!' : 'Share'}
-        </button>
+        {onOpenLanding && (
+          <button className={styles.shareButton} onClick={handleOpenPublicPage}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            Public Page
+          </button>
+        )}
       </header>
 
       <div className={styles.form}>
