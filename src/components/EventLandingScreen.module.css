@@ -502,7 +502,7 @@
   }
 
   .ctaRow {
-    justify-content: center;
+    display: none;
   }
 
   .chips {
