@@ -86,12 +86,15 @@ export async function publishEvent(
       if (!blob) continue;
       const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
       const recPath = `public/events/${slug}-${i}.${ext}`;
-      const recContent = await blobToBase64(blob);
-      event.presentations[i].recording = `${import.meta.env.BASE_URL}events/${slug}-${i}.${ext}`;
       try {
+        console.log(`[Publish] Uploading recording ${i} (${(blob.size / 1024 / 1024).toFixed(1)}MB ${blob.type})`);
+        const recContent = await blobToBase64(blob);
         await pushFile(owner, repo, recPath, recContent, `Publish recording: ${slug} #${i}`, headers);
+        // Only set URL after successful push
+        event.presentations[i].recording = `${import.meta.env.BASE_URL}events/${slug}-${i}.${ext}`;
+        console.log(`[Publish] Recording ${i} uploaded successfully`);
       } catch (e) {
-        console.warn('Failed to publish recording', i, e);
+        console.error('[Publish] Failed to upload recording', i, e);
       }
     }
   }
