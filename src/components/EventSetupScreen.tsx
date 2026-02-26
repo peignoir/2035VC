@@ -11,7 +11,8 @@ import {
 import { loadAndRenderPdf, PdfValidationError } from '../lib/pdfRenderer';
 import { convertWebmToMp4 } from '../lib/convertToMp4';
 import { generateLogo } from '../lib/generateLogo';
-import { buildShareHash } from '../lib/shareUrl';
+import { buildSlug } from '../lib/shareUrl';
+import { publishEvent } from '../lib/publishEvent';
 import styles from './EventSetupScreen.module.css';
 
 interface EventSetupScreenProps {
@@ -299,13 +300,14 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
         socialLinkedin: p.socialLinkedin,
       })),
     };
-    const hash = await buildShareHash(shareable);
+    const slug = buildSlug(shareable.city, shareable.date);
+    publishEvent(slug, shareable).catch(() => {});
     let logoBlob = await getLogoBlob(eventId);
     if (!logoBlob && event) {
       try { logoBlob = await generateLogo(event.name, event.city); } catch { /* ignore */ }
     }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
-    onOpenLanding(shareable, hash, freshLogoUrl);
+    onOpenLanding(shareable, slug, freshLogoUrl);
   }, [event, presentations, onOpenLanding, eventId]);
 
   if (!event) {

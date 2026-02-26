@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { AppScreen, ShareableEvent } from './types';
-import { parseShareUrl, parseSlug, buildSlug } from './lib/shareUrl';
+import { parseShareUrl, parseSlug } from './lib/shareUrl';
 import { putSharedEvent, getSharedEvent } from './lib/db';
 import { EventsListScreen } from './components/EventsListScreen';
 import { EventSetupScreen } from './components/EventSetupScreen';
@@ -53,17 +53,30 @@ function App() {
         return;
       }
 
-      // 2. Clean slug URL — look up cached event
+      // 2. Clean slug URL — look up cached event, then try static JSON
       const slug = parseSlug(hash);
       if (slug) {
         const cached = await getSharedEvent(slug);
         if (cached) {
           setSharedEvent(cached);
           setScreen('event-landing');
-        } else {
-          setSharedEvent(null);
-          setScreen('event-not-found');
+          setCheckingHash(false);
+          return;
         }
+        // Try fetching published static JSON from GitHub Pages
+        try {
+          const resp = await fetch(`${import.meta.env.BASE_URL}events/${slug}.json`);
+          if (resp.ok) {
+            const event = await resp.json() as ShareableEvent;
+            putSharedEvent(slug, event).catch(() => {});
+            setSharedEvent(event);
+            setScreen('event-landing');
+            setCheckingHash(false);
+            return;
+          }
+        } catch { /* network error, fall through */ }
+        setSharedEvent(null);
+        setScreen('event-not-found');
         setCheckingHash(false);
         return;
       }
@@ -99,12 +112,10 @@ function App() {
     setScreen('event-setup');
   }, []);
 
-  const handleOpenLanding = useCallback((event: ShareableEvent, _hash: string, logoUrl?: string) => {
+  const handleOpenLanding = useCallback((event: ShareableEvent, slug: string, logoUrl?: string) => {
     setSharedEvent(event);
     setLandingLogoUrl(logoUrl ?? null);
     setScreen('event-landing');
-    // Cache event and set clean URL; use "Share event" button for full link
-    const slug = buildSlug(event.city, event.date);
     putSharedEvent(slug, event).catch(() => {});
     window.location.hash = `#/${slug}`;
   }, []);
