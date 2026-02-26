@@ -50,7 +50,7 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
           <div className={styles.heroLeft}>
             <h1 className={styles.headline}>Make sense of <span className={styles.accent}>what's coming.</span></h1>
             <p className={styles.subhead}>
-              <span className={styles.accent}>Stories, not panels</span>: 5-minute glimpses of the future from founders, AI experts, and sci-fi writers. <span className={styles.accent}>Optimistic or dystopian</span>—come curious, leave challenged, and meet other <span className={styles.accent}>2035 builders</span> over a drink or coffee.
+              <span className={styles.accent}>Stories, not panels</span>: 5-minute glimpses of the future from investors, founders, AI experts, and sci-fi writers. <span className={styles.accent}>Optimistic or dystopian</span>—come curious, leave challenged, and meet other <span className={styles.accent}>2035 builders</span> over a drink or coffee.
             </p>
             <p className={styles.quote}>
               "How many things have been denied one day, only to become realities the next!"
