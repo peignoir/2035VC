@@ -41,7 +41,7 @@ async function decompressFromBase64url(base64url: string): Promise<string> {
 }
 
 /** Build a slug from city + date: e.g. "tallinn/2025-03-15" */
-function buildSlug(city: string, date: string): string {
+export function buildSlug(city: string, date: string): string {
   return `${slugify(city)}/${date}`;
 }
 

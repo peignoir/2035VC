@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { AppScreen, ShareableEvent } from './types';
-import { parseShareUrl, parseSlug } from './lib/shareUrl';
+import { parseShareUrl, parseSlug, buildSlug } from './lib/shareUrl';
 import { putSharedEvent, getSharedEvent } from './lib/db';
 import { EventsListScreen } from './components/EventsListScreen';
 import { EventSetupScreen } from './components/EventSetupScreen';
@@ -99,11 +99,14 @@ function App() {
     setScreen('event-setup');
   }, []);
 
-  const handleOpenLanding = useCallback((event: ShareableEvent, hash: string, logoUrl?: string) => {
+  const handleOpenLanding = useCallback((event: ShareableEvent, logoUrl?: string) => {
     setSharedEvent(event);
     setLandingLogoUrl(logoUrl ?? null);
     setScreen('event-landing');
-    window.location.hash = hash;
+    // Cache event and set clean URL
+    const slug = buildSlug(event.city, event.date);
+    putSharedEvent(slug, event).catch(() => {});
+    window.location.hash = `#/${slug}`;
   }, []);
 
 

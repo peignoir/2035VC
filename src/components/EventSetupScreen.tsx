@@ -10,14 +10,13 @@ import {
 } from '../lib/db';
 import { loadAndRenderPdf, PdfValidationError } from '../lib/pdfRenderer';
 import { convertWebmToMp4 } from '../lib/convertToMp4';
-import { buildShareHash } from '../lib/shareUrl';
 import { generateLogo } from '../lib/generateLogo';
 import styles from './EventSetupScreen.module.css';
 
 interface EventSetupScreenProps {
   eventId: string;
   onBack: () => void;
-  onOpenLanding?: (event: ShareableEvent, hash: string, logoUrl?: string) => void;
+  onOpenLanding?: (event: ShareableEvent, logoUrl?: string) => void;
 }
 
 export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupScreenProps) {
@@ -299,13 +298,12 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
         socialLinkedin: p.socialLinkedin,
       })),
     };
-    const hash = await buildShareHash(shareable);
     let logoBlob = await getLogoBlob(eventId);
     if (!logoBlob && event) {
       try { logoBlob = await generateLogo(event.name, event.city); } catch { /* ignore */ }
     }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
-    onOpenLanding(shareable, hash, freshLogoUrl);
+    onOpenLanding(shareable, freshLogoUrl);
   }, [event, presentations, onOpenLanding, eventId]);
 
   if (!event) {
