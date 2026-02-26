@@ -85,8 +85,12 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
       })),
     };
     const hash = await buildShareHash(shareable);
-    onOpenLanding(shareable, hash, logoUrls.get(ev.id));
-  }, [onOpenLanding, logoUrls]);
+    // Create a fresh blob URL for the landing page — the list screen's
+    // cleanup will revoke its own copy when it unmounts.
+    const logoBlob = await getLogoBlob(ev.id);
+    const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
+    onOpenLanding(shareable, hash, freshLogoUrl);
+  }, [onOpenLanding]);
 
   function formatDate(dateStr: string): string {
     if (!dateStr) return '';

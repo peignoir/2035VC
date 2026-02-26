@@ -298,8 +298,10 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       })),
     };
     const hash = await buildShareHash(shareable);
-    onOpenLanding(shareable, hash, logoUrl ?? undefined);
-  }, [event, presentations, onOpenLanding, logoUrl]);
+    const logoBlob = await getLogoBlob(eventId);
+    const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
+    onOpenLanding(shareable, hash, freshLogoUrl);
+  }, [event, presentations, onOpenLanding, eventId]);
 
   if (!event) {
     return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>;
