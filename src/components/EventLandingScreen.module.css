@@ -243,6 +243,15 @@
   line-height: 1.1;
 }
 
+.heroChapterName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 12px;
+  letter-spacing: -0.01em;
+}
+
 /* ── Value props ── */
 .valueSection {
   padding: 64px 32px;
@@ -357,8 +366,10 @@
 }
 
 .speakerName {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
 }
 
 .toneBadge {
@@ -372,10 +383,9 @@
 }
 
 .storyTitle {
-  color: var(--color-accent);
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .speakerBio {

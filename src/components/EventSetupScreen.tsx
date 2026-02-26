@@ -335,9 +335,9 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       <div className={styles.form}>
         {/* Event details */}
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Gathering Details</h2>
+          <h2 className={styles.sectionTitle}>Event Details</h2>
           <div className={styles.fieldGroup}>
-            <label className={styles.label}>Chapter Name</label>
+            <label className={styles.label}>Event Name</label>
             <input
               className={styles.input}
               type="text"

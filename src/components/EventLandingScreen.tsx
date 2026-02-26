@@ -35,7 +35,7 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
         </div>
         <div className={styles.navRight}>
           <a href="#how-it-works" className={styles.navLink}>How it works</a>
-          <a href="#speakers" className={styles.navLink}>Speakers</a>
+          <a href="#speakers" className={styles.navLink}>Stories</a>
           {event.link && (
             <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.navCta}>
               Reserve
@@ -76,6 +76,7 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
                 <span className={styles.heroLogoText}>{event.name || 'Cafe2035'}</span>
               </div>
             )}
+            {event.name && <p className={styles.heroChapterName}>{event.name}</p>}
           </div>
         </div>
       </section>
@@ -135,7 +136,7 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
       {/* Speaker Lineup */}
       {event.presentations.length > 0 && (
         <section id="speakers" className={styles.speakersSection}>
-          <h2 className={styles.sectionTitle}>Speaker Lineup</h2>
+          <h2 className={styles.sectionTitle}>Story Lineup</h2>
           <div className={styles.speakerGrid}>
             {event.presentations.map((pres, index) => {
               const toneEmoji = pres.storyTone === 'white' ? '\u2764\uFE0F' : pres.storyTone === 'black' ? '\uD83D\uDCA9' : '\u2696\uFE0F';
@@ -143,12 +144,10 @@ export function EventLandingScreen({ event, logoUrl, onBack }: EventLandingScree
               return (
                 <div key={index} className={styles.speakerCard}>
                   <div className={styles.speakerHeader}>
-                    <h3 className={styles.speakerName}>{pres.speakerName || 'TBA'}</h3>
+                    <h3 className={styles.storyTitle}>{pres.storyName || 'Untitled Story'}</h3>
                     <span className={styles.toneBadge} title={toneLabel}>{toneEmoji} {toneLabel}</span>
                   </div>
-                  {pres.storyName && (
-                    <p className={styles.storyTitle}>{pres.storyName}</p>
-                  )}
+                  <p className={styles.speakerName}>{pres.speakerName || 'TBA'}</p>
                   {pres.speakerBio && (
                     <p className={styles.speakerBio}>{pres.speakerBio}</p>
                   )}
