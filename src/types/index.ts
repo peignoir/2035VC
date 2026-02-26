@@ -12,7 +12,7 @@ export interface IgniteEvent {
   createdAt: number;
 }
 
-export type StoryTone = 'white' | 'black' | 'neutral';
+export type StoryTone = 'optimistic' | 'dystopian';
 
 export interface EventPresentation {
   id: string;

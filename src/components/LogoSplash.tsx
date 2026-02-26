@@ -74,7 +74,8 @@ export function LogoSplash({
               const played = playedIds.has(pres.id);
               const name = pres.storyName || pres.speakerName || pres.fileName;
               const speaker = pres.storyName && pres.speakerName ? pres.speakerName : null;
-              const toneEmoji = pres.storyTone === 'white' ? '❤️' : pres.storyTone === 'black' ? '💩' : '⚖️';
+              const tone = pres.storyTone as string;
+              const toneEmoji = (tone === 'dystopian' || tone === 'black') ? '🌑' : '☀️';
               const hasRecording = recordingUrls?.has(pres.id) ?? false;
               const recUrl = recordingUrls?.get(pres.id);
               const recType = recordingTypes?.get(pres.id) || 'video/webm';

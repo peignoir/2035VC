@@ -155,7 +155,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
         fileName: file.name,
         speakerName: '',
         storyName: '',
-        storyTone: 'neutral',
+        storyTone: 'optimistic',
         order: presentations.length,
       };
       await putPresentation(newPres);
@@ -476,13 +476,12 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
                     <div className={styles.toneRow}>
                       <span className={styles.toneRowLabel}>Story vibe</span>
                       {([
-                        ['white', '❤️', 'Bloom'],
-                        ['neutral', '⚖️', 'Balance'],
-                        ['black', '💩', 'Doom'],
+                        ['optimistic', '☀️', 'Optimistic'],
+                        ['dystopian', '🌑', 'Dystopian'],
                       ] as [StoryTone, string, string][]).map(([tone, emoji, label]) => (
                         <button
                           key={tone}
-                          className={`${styles.toneButton} ${(pres.storyTone ?? 'neutral') === tone ? styles.toneActive : ''}`}
+                          className={`${styles.toneButton} ${((pres.storyTone as string) === 'dystopian' || (pres.storyTone as string) === 'black' ? 'dystopian' : 'optimistic') === tone ? styles.toneActive : ''}`}
                           onClick={() => updatePresField(pres.id, 'storyTone', tone)}
                           title={label}
                           type="button"
