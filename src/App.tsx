@@ -1,13 +1,29 @@
-import { useState, useCallback } from 'react';
-import type { AppScreen } from './types';
+import { useState, useCallback, useEffect } from 'react';
+import type { AppScreen, ShareableEvent } from './types';
+import { parseShareUrl } from './lib/shareUrl';
 import { EventsListScreen } from './components/EventsListScreen';
 import { EventSetupScreen } from './components/EventSetupScreen';
 import { EventRunScreen } from './components/EventRunScreen';
+import { EventLandingScreen } from './components/EventLandingScreen';
 import styles from './App.module.css';
 
 function App() {
   const [screen, setScreen] = useState<AppScreen>('events-list');
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [sharedEvent, setSharedEvent] = useState<ShareableEvent | null>(null);
+  const [checkingHash, setCheckingHash] = useState(true);
+
+  // On mount, check if the URL hash contains shared event data
+  useEffect(() => {
+    (async () => {
+      const event = await parseShareUrl(window.location.hash);
+      if (event) {
+        setSharedEvent(event);
+        setScreen('event-landing');
+      }
+      setCheckingHash(false);
+    })();
+  }, []);
 
   const handleCreateEvent = useCallback(() => {
     const id = crypto.randomUUID();
@@ -34,8 +50,15 @@ function App() {
     setScreen('event-setup');
   }, []);
 
+  if (checkingHash) {
+    return <div className={styles.app} />;
+  }
+
   return (
     <div className={styles.app}>
+      {screen === 'event-landing' && sharedEvent && (
+        <EventLandingScreen event={sharedEvent} />
+      )}
       {screen === 'events-list' && (
         <EventsListScreen
           onSelectEvent={handleSelectEvent}

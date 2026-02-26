@@ -133,6 +133,33 @@
   opacity: 0.4;
 }
 
+.shareButton {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.card:hover .shareButton {
+  opacity: 1;
+}
+
+.shareButton:hover {
+  color: var(--color-accent);
+  background: rgba(0, 0, 0, 0.7);
+}
+
 .deleteButton {
   position: absolute;
   top: 8px;

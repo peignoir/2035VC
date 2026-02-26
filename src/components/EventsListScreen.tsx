@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { IgniteEvent } from '../types';
-import { getAllEvents, deleteEvent, getLogoBlob } from '../lib/db';
+import type { IgniteEvent, ShareableEvent } from '../types';
+import { getAllEvents, deleteEvent, getLogoBlob, getEventPresentations } from '../lib/db';
 import { generateLogo } from '../lib/generateLogo';
+import { buildShareUrl } from '../lib/shareUrl';
 import styles from './EventsListScreen.module.css';
 
 interface EventsListScreenProps {
@@ -14,6 +15,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: E
   const [events, setEvents] = useState<IgniteEvent[]>([]);
   const [logoUrls, setLogoUrls] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [shareToastId, setShareToastId] = useState<string | null>(null);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -64,6 +66,30 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: E
     onRunEvent(eventId);
   }, [onRunEvent]);
 
+  const handleShare = useCallback(async (e: React.MouseEvent, ev: IgniteEvent) => {
+    e.stopPropagation();
+    const pres = await getEventPresentations(ev.id);
+    const shareable: ShareableEvent = {
+      name: ev.name,
+      city: ev.city,
+      date: ev.date,
+      link: ev.link,
+      presentations: pres.map((p) => ({
+        speakerName: p.speakerName,
+        storyName: p.storyName,
+        storyTone: p.storyTone,
+        speakerBio: p.speakerBio,
+        socialX: p.socialX,
+        socialInstagram: p.socialInstagram,
+        socialLinkedin: p.socialLinkedin,
+      })),
+    };
+    const url = await buildShareUrl(shareable);
+    await navigator.clipboard.writeText(url);
+    setShareToastId(ev.id);
+    setTimeout(() => setShareToastId(null), 2500);
+  }, []);
+
   function formatDate(dateStr: string): string {
     if (!dateStr) return '';
     try {
@@ -88,7 +114,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: E
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Cafe 2035 Ignite</h1>
+        <h1 className={styles.title}>Cafe 2035</h1>
         <p className={styles.subtitle}>The future is in this room</p>
       </header>
 
@@ -145,6 +171,26 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent }: E
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21" />
                 </svg>
+              </button>
+              <button
+                className={styles.shareButton}
+                onClick={(e) => handleShare(e, event)}
+                aria-label="Share event"
+                title={shareToastId === event.id ? 'Link copied!' : 'Share'}
+              >
+                {shareToastId === event.id ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  </svg>
+                )}
               </button>
               <button
                 className={styles.deleteButton}

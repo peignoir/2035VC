@@ -22,7 +22,7 @@ async function renderFromArrayBuffer(
 
   if (pdf.numPages !== REQUIRED_PAGES) {
     throw new PdfValidationError(
-      `Your deck has ${pdf.numPages} slide${pdf.numPages !== 1 ? 's' : ''}. Ignite talks require exactly ${REQUIRED_PAGES} slides.`,
+      `Your deck has ${pdf.numPages} slide${pdf.numPages !== 1 ? 's' : ''}. Stories use the fast PechaKucha format: exactly ${REQUIRED_PAGES} slides, 15 seconds each.`,
     );
   }
 

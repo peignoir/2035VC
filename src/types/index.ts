@@ -1,5 +1,5 @@
 // App navigation
-export type AppScreen = 'events-list' | 'event-setup' | 'event-run';
+export type AppScreen = 'events-list' | 'event-setup' | 'event-run' | 'event-landing';
 
 // Event data model (persisted in IndexedDB)
 export interface IgniteEvent {
@@ -22,6 +22,29 @@ export interface EventPresentation {
   storyName: string;
   storyTone: StoryTone;
   order: number;
+  speakerBio?: string;
+  socialX?: string;
+  socialInstagram?: string;
+  socialLinkedin?: string;
+}
+
+// Shareable event data (encoded in URL, no blobs)
+export interface ShareablePresentation {
+  speakerName: string;
+  storyName: string;
+  storyTone: string;
+  speakerBio?: string;
+  socialX?: string;
+  socialInstagram?: string;
+  socialLinkedin?: string;
+}
+
+export interface ShareableEvent {
+  name: string;
+  city: string;
+  date: string;
+  link: string;
+  presentations: ShareablePresentation[];
 }
 
 // Presentation runtime types (in-memory only)

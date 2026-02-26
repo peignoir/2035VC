@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import type { IgniteEvent, EventPresentation, StoryTone } from '../types';
+import type { IgniteEvent, EventPresentation, StoryTone, ShareableEvent } from '../types';
 import {
   getEvent, putEvent,
   getEventPresentations, putPresentation, deletePresentation, reorderPresentations,
@@ -10,6 +10,7 @@ import {
 } from '../lib/db';
 import { loadAndRenderPdf, PdfValidationError } from '../lib/pdfRenderer';
 import { convertWebmToMp4 } from '../lib/convertToMp4';
+import { buildShareUrl } from '../lib/shareUrl';
 import styles from './EventSetupScreen.module.css';
 
 interface EventSetupScreenProps {
@@ -26,6 +27,7 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
   const [pdfProgress, setPdfProgress] = useState(0);
   const [recordingUrls, setRecordingUrls] = useState<Map<string, string>>(new Map());
   const [convertingMp4, setConvertingMp4] = useState<string | null>(null); // presId being converted
+  const [shareToast, setShareToast] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Load event data
@@ -178,7 +180,7 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
   });
 
   // Update presentation fields (speaker name, story name)
-  const updatePresField = useCallback((presId: string, field: 'speakerName' | 'storyName' | 'storyTone', value: string) => {
+  const updatePresField = useCallback((presId: string, field: 'speakerName' | 'storyName' | 'storyTone' | 'speakerBio' | 'socialX' | 'socialInstagram' | 'socialLinkedin', value: string) => {
     setPresentations((prev) => {
       const updated = prev.map((p) =>
         p.id === presId ? { ...p, [field]: value } : p,
@@ -278,6 +280,29 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
     await reorderPresentations(eventId, orderedIds);
   }, [presentations, eventId]);
 
+  const handleShare = useCallback(async () => {
+    if (!event) return;
+    const shareable: ShareableEvent = {
+      name: event.name,
+      city: event.city,
+      date: event.date,
+      link: event.link,
+      presentations: presentations.map((p) => ({
+        speakerName: p.speakerName,
+        storyName: p.storyName,
+        storyTone: p.storyTone,
+        speakerBio: p.speakerBio,
+        socialX: p.socialX,
+        socialInstagram: p.socialInstagram,
+        socialLinkedin: p.socialLinkedin,
+      })),
+    };
+    const url = await buildShareUrl(shareable);
+    await navigator.clipboard.writeText(url);
+    setShareToast(true);
+    setTimeout(() => setShareToast(false), 2500);
+  }, [event, presentations]);
+
   if (!event) {
     return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>;
   }
@@ -291,7 +316,16 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
           </svg>
           Gatherings
         </button>
-        {/* Run moved to events list */}
+        <button className={styles.shareButton} onClick={handleShare}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          {shareToast ? 'Link copied!' : 'Share'}
+        </button>
       </header>
 
       <div className={styles.form}>
@@ -380,7 +414,7 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
         {/* Presentations */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            Ignite Talks
+            Stories
             {presentations.length > 0 && (
               <span className={styles.badge}>{presentations.length}</span>
             )}
@@ -452,6 +486,45 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
                           <span className={styles.toneLabel}>{label}</span>
                         </button>
                       ))}
+                    </div>
+                    <textarea
+                      className={styles.presTextarea}
+                      value={pres.speakerBio ?? ''}
+                      onChange={(e) => updatePresField(pres.id, 'speakerBio', e.target.value)}
+                      placeholder="Short speaker bio (optional)"
+                      rows={2}
+                    />
+                    <div className={styles.socialRow}>
+                      <div className={styles.socialField}>
+                        <span className={styles.socialIcon}>𝕏</span>
+                        <input
+                          className={styles.presInput}
+                          type="text"
+                          value={pres.socialX ?? ''}
+                          onChange={(e) => updatePresField(pres.id, 'socialX', e.target.value)}
+                          placeholder="@handle"
+                        />
+                      </div>
+                      <div className={styles.socialField}>
+                        <span className={styles.socialIcon}>IG</span>
+                        <input
+                          className={styles.presInput}
+                          type="text"
+                          value={pres.socialInstagram ?? ''}
+                          onChange={(e) => updatePresField(pres.id, 'socialInstagram', e.target.value)}
+                          placeholder="@handle"
+                        />
+                      </div>
+                      <div className={styles.socialField}>
+                        <span className={styles.socialIcon}>in</span>
+                        <input
+                          className={styles.presInput}
+                          type="text"
+                          value={pres.socialLinkedin ?? ''}
+                          onChange={(e) => updatePresField(pres.id, 'socialLinkedin', e.target.value)}
+                          placeholder="LinkedIn URL"
+                        />
+                      </div>
                     </div>
                     {recordingUrls.has(pres.id) && (
                       <div className={styles.recordingPreview}>
@@ -549,7 +622,7 @@ export function EventSetupScreen({ eventId, onBack }: EventSetupScreenProps) {
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                <span>Add Ignite talk (PDF, 20 slides, max 30 MB)</span>
+                <span>Add story (PDF, 20 slides, max 30 MB)</span>
               </>
             )}
           </div>
