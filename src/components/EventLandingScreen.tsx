@@ -91,7 +91,7 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
                 </a>
               )}
               <button className={styles.ctaSecondary} onClick={handleShare}>
-                {copied ? 'Link copied!' : 'Share event'}
+                {copied ? 'Link copied!' : 'Copy link to share'}
               </button>
             </div>
             <div className={styles.chips}>

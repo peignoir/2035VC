@@ -99,14 +99,14 @@ function App() {
     setScreen('event-setup');
   }, []);
 
-  const handleOpenLanding = useCallback((event: ShareableEvent, hash: string, logoUrl?: string) => {
+  const handleOpenLanding = useCallback((event: ShareableEvent, _hash: string, logoUrl?: string) => {
     setSharedEvent(event);
     setLandingLogoUrl(logoUrl ?? null);
     setScreen('event-landing');
-    // Set full hash (shareable URL), also cache for clean-URL visits
+    // Cache event and set clean URL; use "Share event" button for full link
     const slug = buildSlug(event.city, event.date);
     putSharedEvent(slug, event).catch(() => {});
-    window.location.hash = hash;
+    window.location.hash = `#/${slug}`;
   }, []);
 
 
@@ -129,7 +129,7 @@ function App() {
         <div className={styles.passwordGate}>
           <h2 className={styles.passwordTitle}>Event not found</h2>
           <p style={{ color: '#999', textAlign: 'center' }}>
-            This event link may have expired or hasn't been opened on this device yet.
+            Ask the organizer for a share link to open this event on this device.
           </p>
         </div>
       </div>
