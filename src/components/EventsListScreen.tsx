@@ -95,7 +95,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
       shareable.logo = await blobToDataUrl(logoBlob);
     }
     const slug = buildSlug(shareable.city, shareable.date);
-    publishEvent(slug, shareable).catch(() => {});
+    publishEvent(slug, shareable, pres.map((p) => p.id)).catch(() => {});
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, slug, freshLogoUrl);
   }, [onOpenLanding]);

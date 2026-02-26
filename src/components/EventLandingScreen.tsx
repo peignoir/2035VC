@@ -197,6 +197,15 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
                       )}
                     </div>
                   )}
+                  {pres.recording && (
+                    <video
+                      className={styles.recordingVideo}
+                      src={pres.recording}
+                      controls
+                      preload="metadata"
+                      playsInline
+                    />
+                  )}
                 </div>
               );
             })}

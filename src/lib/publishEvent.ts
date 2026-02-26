@@ -1,4 +1,5 @@
 import type { ShareableEvent } from '../types';
+import { getRecordingBlob } from './db';
 
 const TOKEN_KEY = 'github_token';
 
@@ -19,19 +20,23 @@ function getToken(): string | null {
   return null;
 }
 
-/** Push event JSON to the repo so clean URLs work cross-device. */
-export async function publishEvent(slug: string, event: ShareableEvent): Promise<void> {
-  const token = getToken();
-  if (!token) return;
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      resolve(dataUrl.split(',')[1]); // strip "data:...;base64,"
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
 
-  const { owner, repo } = getRepoInfo();
-  const path = `public/events/${slug}.json`;
+async function pushFile(
+  owner: string, repo: string, path: string,
+  content: string, message: string, headers: Record<string, string>,
+): Promise<void> {
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-  const headers: Record<string, string> = {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-    'Accept': 'application/vnd.github+json',
-  };
 
   // Check if file already exists (need SHA for updates)
   let sha: string | undefined;
@@ -40,18 +45,12 @@ export async function publishEvent(slug: string, event: ShareableEvent): Promise
     if (existing.ok) {
       sha = (await existing.json()).sha;
     }
-  } catch { /* file doesn't exist yet, that's fine */ }
-
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(event, null, 2))));
+  } catch { /* file doesn't exist yet */ }
 
   const resp = await fetch(apiUrl, {
     method: 'PUT',
     headers,
-    body: JSON.stringify({
-      message: `Publish event: ${slug}`,
-      content,
-      ...(sha && { sha }),
-    }),
+    body: JSON.stringify({ message, content, ...(sha && { sha }) }),
   });
 
   if (!resp.ok) {
@@ -59,9 +58,45 @@ export async function publishEvent(slug: string, event: ShareableEvent): Promise
     if (resp.status === 401 || resp.status === 403) {
       localStorage.removeItem(TOKEN_KEY);
       alert('GitHub token is invalid or lacks permissions. It has been cleared — try again.');
-    } else {
-      alert(`Failed to publish event: ${resp.status} ${body}`);
     }
-    throw new Error(`Publish failed: ${resp.status}`);
+    throw new Error(`Push failed for ${path}: ${resp.status} ${body}`);
   }
+}
+
+/** Publish event JSON and recordings to the repo. */
+export async function publishEvent(
+  slug: string,
+  event: ShareableEvent,
+  presentationIds?: string[],
+): Promise<void> {
+  const token = getToken();
+  if (!token) return;
+
+  const { owner, repo } = getRepoInfo();
+  const headers: Record<string, string> = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/vnd.github+json',
+  };
+
+  // Publish recordings as separate files
+  if (presentationIds) {
+    for (let i = 0; i < presentationIds.length; i++) {
+      const blob = await getRecordingBlob(presentationIds[i]);
+      if (!blob) continue;
+      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+      const recPath = `public/events/${slug}-${i}.${ext}`;
+      const recContent = await blobToBase64(blob);
+      event.presentations[i].recording = `${import.meta.env.BASE_URL}events/${slug}-${i}.${ext}`;
+      try {
+        await pushFile(owner, repo, recPath, recContent, `Publish recording: ${slug} #${i}`, headers);
+      } catch (e) {
+        console.warn('Failed to publish recording', i, e);
+      }
+    }
+  }
+
+  // Publish event JSON (after recording URLs are set)
+  const jsonContent = btoa(unescape(encodeURIComponent(JSON.stringify(event, null, 2))));
+  await pushFile(owner, repo, `public/events/${slug}.json`, jsonContent, `Publish event: ${slug}`, headers);
 }

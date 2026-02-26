@@ -415,6 +415,12 @@
   color: var(--color-accent);
 }
 
+.recordingVideo {
+  width: 100%;
+  border-radius: var(--radius-md);
+  margin-top: 12px;
+}
+
 /* ── Footer ── */
 .footer {
   text-align: center;

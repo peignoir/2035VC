@@ -37,6 +37,7 @@ export interface ShareablePresentation {
   socialX?: string;
   socialInstagram?: string;
   socialLinkedin?: string;
+  recording?: string;
 }
 
 export interface ShareableEvent {

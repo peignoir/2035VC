@@ -309,7 +309,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       shareable.logo = await blobToDataUrl(logoBlob);
     }
     const slug = buildSlug(shareable.city, shareable.date);
-    publishEvent(slug, shareable).catch(() => {});
+    publishEvent(slug, shareable, presentations.map((p) => p.id)).catch(() => {});
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
     onOpenLanding(shareable, slug, freshLogoUrl);
   }, [event, presentations, onOpenLanding, eventId]);
