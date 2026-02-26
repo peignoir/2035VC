@@ -40,12 +40,17 @@ async function decompressFromBase64url(base64url: string): Promise<string> {
   return new Response(stream).text();
 }
 
-/** Build a hash fragment for a shareable event: #/live/slug~data */
+/** Build a slug from city + date: e.g. "tallinn/2025-03-15" */
+function buildSlug(city: string, date: string): string {
+  return `${slugify(city)}/${date}`;
+}
+
+/** Build a hash fragment for a shareable event: #/city/date~data */
 export async function buildShareHash(event: ShareableEvent): Promise<string> {
   const json = JSON.stringify(event);
   const encoded = await compressToBase64url(json);
-  const slug = slugify(event.name);
-  return `#/live/${slug}~${encoded}`;
+  const slug = buildSlug(event.city, event.date);
+  return `#/${slug}~${encoded}`;
 }
 
 /** Build a full shareable URL */
@@ -55,17 +60,41 @@ export async function buildShareUrl(event: ShareableEvent): Promise<string> {
   return `${base}${hash}`;
 }
 
-/** Parse event data from a URL hash. Returns null if not a share URL. */
-export async function parseShareUrl(hash: string): Promise<ShareableEvent | null> {
-  // Match #/live/slug~data or legacy #/event/data
+/** Parse event data from a URL hash. Returns event + slug, or null. */
+export async function parseShareUrl(hash: string): Promise<{ event: ShareableEvent; slug: string } | null> {
+  // New format: #/city-slug/YYYY-MM-DD~data
+  const newMatch = hash.match(/^#\/([^/~]+\/\d{4}-\d{2}-\d{2})~(.+)$/);
+  // Legacy: #/live/slug~data
   const liveMatch = hash.match(/^#\/live\/[^~]+~(.+)$/);
+  // Legacy: #/event/data
   const legacyMatch = hash.match(/^#\/event\/(.+)$/);
+
+  if (newMatch) {
+    const slug = newMatch[1];
+    const encoded = newMatch[2];
+    try {
+      const json = await decompressFromBase64url(encoded);
+      const event = JSON.parse(json) as ShareableEvent;
+      return { event, slug };
+    } catch {
+      return null;
+    }
+  }
+
   const encoded = liveMatch?.[1] ?? legacyMatch?.[1];
   if (!encoded) return null;
   try {
     const json = await decompressFromBase64url(encoded);
-    return JSON.parse(json) as ShareableEvent;
+    const event = JSON.parse(json) as ShareableEvent;
+    const slug = buildSlug(event.city, event.date);
+    return { event, slug };
   } catch {
     return null;
   }
+}
+
+/** Extract slug from a clean URL hash: #/city-slug/YYYY-MM-DD (no compressed data) */
+export function parseSlug(hash: string): string | null {
+  const match = hash.match(/^#\/([^/~]+\/\d{4}-\d{2}-\d{2})$/);
+  return match?.[1] ?? null;
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { AppScreen, ShareableEvent } from './types';
-import { parseShareUrl } from './lib/shareUrl';
+import { parseShareUrl, parseSlug } from './lib/shareUrl';
+import { putSharedEvent, getSharedEvent } from './lib/db';
 import { EventsListScreen } from './components/EventsListScreen';
 import { EventSetupScreen } from './components/EventSetupScreen';
 import { EventRunScreen } from './components/EventRunScreen';
@@ -35,11 +36,39 @@ function App() {
   // On mount, check if the URL hash contains shared event data
   useEffect(() => {
     (async () => {
-      const event = await parseShareUrl(window.location.hash);
-      if (event) {
+      const hash = window.location.hash;
+
+      // 1. Full share URL with compressed data — decode, cache, clean URL
+      const parsed = await parseShareUrl(hash);
+      if (parsed) {
+        const { event, slug } = parsed;
         setSharedEvent(event);
         setScreen('event-landing');
+        // Cache for future clean-URL visits
+        putSharedEvent(slug, event).catch(() => {});
+        // Replace ugly URL with clean slug
+        const cleanHash = `#/${slug}`;
+        history.replaceState(null, '', `${window.location.pathname}${window.location.search}${cleanHash}`);
+        setCheckingHash(false);
+        return;
       }
+
+      // 2. Clean slug URL — look up cached event
+      const slug = parseSlug(hash);
+      if (slug) {
+        const cached = await getSharedEvent(slug);
+        if (cached) {
+          setSharedEvent(cached);
+          setScreen('event-landing');
+        } else {
+          setSharedEvent(null);
+          setScreen('event-not-found');
+        }
+        setCheckingHash(false);
+        return;
+      }
+
+      // 3. No share URL — fall through to admin screens
       setCheckingHash(false);
     })();
   }, []);
@@ -87,6 +116,19 @@ function App() {
     return (
       <div className={styles.app}>
         <EventLandingScreen event={sharedEvent} logoUrl={landingLogoUrl} />
+      </div>
+    );
+  }
+
+  if (screen === 'event-not-found') {
+    return (
+      <div className={styles.app}>
+        <div className={styles.passwordGate}>
+          <h2 className={styles.passwordTitle}>Event not found</h2>
+          <p style={{ color: '#999', textAlign: 'center' }}>
+            This event link may have expired or hasn't been opened on this device yet.
+          </p>
+        </div>
       </div>
     );
   }

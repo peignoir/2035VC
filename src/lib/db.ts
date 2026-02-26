@@ -1,7 +1,7 @@
-import type { IgniteEvent, EventPresentation } from '../types';
+import type { IgniteEvent, EventPresentation, ShareableEvent } from '../types';
 
 const DB_NAME = 'ignite-events';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 let dbInstance: IDBDatabase | null = null;
 
@@ -27,6 +27,10 @@ function openDb(): Promise<IDBDatabase> {
 
       if (oldVersion < 2) {
         db.createObjectStore('recordings');
+      }
+
+      if (oldVersion < 3) {
+        db.createObjectStore('shared-events');
       }
     };
 
@@ -242,4 +246,26 @@ export async function deleteRecordingBlob(presentationId: string): Promise<void>
   const tx = db.transaction('recordings', 'readwrite');
   tx.objectStore('recordings').delete(presentationId);
   await txComplete(tx);
+}
+
+// ── Shared events cache (for clean URLs) ──
+
+function hasSharedEventsStore(db: IDBDatabase): boolean {
+  return db.objectStoreNames.contains('shared-events');
+}
+
+export async function putSharedEvent(slug: string, event: ShareableEvent): Promise<void> {
+  const db = await openDb();
+  if (!hasSharedEventsStore(db)) return;
+  const tx = db.transaction('shared-events', 'readwrite');
+  tx.objectStore('shared-events').put(event, slug);
+  await txComplete(tx);
+}
+
+export async function getSharedEvent(slug: string): Promise<ShareableEvent | null> {
+  const db = await openDb();
+  if (!hasSharedEventsStore(db)) return null;
+  const tx = db.transaction('shared-events', 'readonly');
+  const result = await reqToPromise(tx.objectStore('shared-events').get(slug));
+  return result ?? null;
 }
