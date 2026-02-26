@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import type { SlideImage, LoadedDeck } from '../types';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}pdf.worker.min.mjs`;
 
 const RENDER_SCALE = 2;
 const REQUIRED_PAGES = 20;
