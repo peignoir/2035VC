@@ -288,6 +288,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       city: event.city,
       date: event.date,
       link: event.link,
+      eventId: event.id,
       presentations: presentations.map((p) => ({
         speakerName: p.speakerName,
         storyName: p.storyName,

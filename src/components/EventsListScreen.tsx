@@ -74,6 +74,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
       city: ev.city,
       date: ev.date,
       link: ev.link,
+      eventId: ev.id,
       presentations: pres.map((p) => ({
         speakerName: p.speakerName,
         storyName: p.storyName,

@@ -1,5 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import type { ShareableEvent } from '../types';
+import { getLogoBlob } from '../lib/db';
 import { generateLogo } from '../lib/generateLogo';
 import styles from './EventLandingScreen.module.css';
 
@@ -11,24 +12,32 @@ interface EventLandingScreenProps {
 
 export function EventLandingScreen({ event, logoUrl: externalLogoUrl, onBack }: EventLandingScreenProps) {
   const shortDate = formatShortDate(event.date);
-  const [generatedLogoUrl, setGeneratedLogoUrl] = useState<string | null>(null);
+  const [resolvedLogoUrl, setResolvedLogoUrl] = useState<string | null>(null);
 
-  // Generate a logo if none was provided
+  // Try: uploaded logo from IndexedDB → generated fallback
   useEffect(() => {
     if (externalLogoUrl) return;
     let revoke = '';
     (async () => {
       try {
-        const blob = await generateLogo(event.name, event.city);
+        // Try loading the uploaded logo from IndexedDB (works on same browser)
+        let blob: Blob | null | undefined = null;
+        if (event.eventId) {
+          blob = await getLogoBlob(event.eventId);
+        }
+        // Fall back to generated logo
+        if (!blob) {
+          blob = await generateLogo(event.name, event.city);
+        }
         const url = URL.createObjectURL(blob);
         revoke = url;
-        setGeneratedLogoUrl(url);
+        setResolvedLogoUrl(url);
       } catch { /* fall through to text fallback */ }
     })();
     return () => { if (revoke) URL.revokeObjectURL(revoke); };
-  }, [externalLogoUrl, event.name, event.city]);
+  }, [externalLogoUrl, event.eventId, event.name, event.city]);
 
-  const logoUrl = externalLogoUrl || generatedLogoUrl;
+  const logoUrl = externalLogoUrl || resolvedLogoUrl;
 
   const scrollToReserve = useCallback(() => {
     if (event.link) {
