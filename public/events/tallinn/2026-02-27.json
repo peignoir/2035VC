@@ -6,12 +6,13 @@
   "eventId": "ff0facf1-db64-42a4-b99e-3a12e2cc7779",
   "presentations": [
     {
-      "speakerName": "franck nouyrigat",
-      "storyName": "No human Inc.",
+      "speakerName": "Franck nouyrigat",
+      "storyName": "Tallinn No human inc ",
       "storyTone": "optimistic",
-      "speakerBio": "Franck nouyrigat - a serial founder ... ",
-      "socialX": "@peignoir",
-      "socialInstagram": "@peignoir2"
+      "speakerBio": "Franck Nouyrigat is a French American entrepreneur and founder of startup weekend, massive recorp and electis, he is  fascinated by the near-future edge where AI, economics, and human weirdness collide. Raised on Isaac Asimov and Jules Verne, he writes stories that treat tomorrow like a systems problem. ",
+      "socialX": "peignoir",
+      "socialInstagram": "peignoir2",
+      "recording": "blob:https://peignoir.github.io/37c34909-3a8f-41dc-afb9-7267a63f578e"
     }
   ],
   "logo": "/2035VC/events/tallinn/2026-02-27-logo.png"
