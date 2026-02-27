@@ -13,7 +13,6 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
   const shortDate = formatShortDate(event.date);
   const [resolvedLogoUrl, setResolvedLogoUrl] = useState<string | null>(null);
 
-  // Try: external prop → embedded data URL → IndexedDB → generated fallback
   useEffect(() => {
     if (externalLogoUrl || event.logo) return;
     let revoke = '';
@@ -50,11 +49,11 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
           <span className={styles.navBrand}>Cafe2035</span>
         </div>
         <div className={styles.navRight}>
-          <button className={styles.navLink} onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>How it works</button>
+          <button className={styles.navLink} onClick={() => document.getElementById('what')?.scrollIntoView({ behavior: 'smooth' })}>What is this</button>
           <button className={styles.navLink} onClick={() => document.getElementById('speakers')?.scrollIntoView({ behavior: 'smooth' })}>Stories</button>
           {event.link && (
             <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.navCta}>
-              Reserve
+              I'm in
             </a>
           )}
         </div>
@@ -64,13 +63,15 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.heroLeft}>
-            <h1 className={styles.headline}>Make sense of <span className={styles.accent}>what's coming.</span></h1>
+            <div className={styles.chips}>
+              {event.city && <span className={styles.chip}>{event.city}</span>}
+              {shortDate && <span className={styles.chip}>{shortDate}</span>}
+            </div>
+            <h1 className={styles.headline}>
+              See <span className={styles.accent}>2035</span> before it arrives.
+            </h1>
             <p className={styles.subhead}>
-              <span className={styles.accent}>Stories, not panels</span>: 5-minute glimpses of the future from investors, founders, AI experts, and sci-fi writers. <span className={styles.accent}>Optimistic or dystopian</span>—come curious, leave challenged, and meet other <span className={styles.accent}>2035 builders</span> over a drink or coffee.
-            </p>
-            <p className={styles.quote}>
-              "How many things have been denied one day, only to become realities the next!"
-              <span className={styles.quoteAuthor}> — Jules Verne</span>
+              Tonight we open a window into 2035. A world where AI and robots have reshaped how we work, learn, create, and live. Not a prediction. Not a trend report. <span className={styles.accent}>A vision.</span> The future made visible, right in front of you.
             </p>
             <div className={styles.ctaRow}>
               {event.link && (
@@ -78,10 +79,9 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
                   Reserve a seat
                 </a>
               )}
-            </div>
-            <div className={styles.chips}>
-              {event.city && <span className={styles.chip}>{event.city}</span>}
-              {shortDate && <span className={styles.chip}>{shortDate}</span>}
+              <button className={styles.ctaSecondary} onClick={() => document.getElementById('speakers')?.scrollIntoView({ behavior: 'smooth' })}>
+                See the lineup
+              </button>
             </div>
           </div>
           <div className={styles.heroRight}>
@@ -99,41 +99,39 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
         </div>
       </section>
 
-      {/* What you'll get */}
+      {/* What is Cafe2035 */}
+      <section id="what" className={styles.whatSection}>
+        <div className={styles.whatContent}>
+          <h2 className={styles.whatHeadline}>An AI prepper meetup.</h2>
+          <p className={styles.whatBody}>
+            Cafe2035 is a worldwide gathering of people who refuse to be caught off guard by AI and want to see 2035 before it arrives. Over morning coffee or late-night drinks, in cities across the globe.
+          </p>
+          <p className={styles.whatPunch}>
+            Whatever is coming, you'll be ready <span className={styles.accent}>(and sleep better)</span>.
+          </p>
+        </div>
+      </section>
+
+      {/* What you'll walk away with */}
       <section className={styles.valueSection}>
+        <h2 className={styles.sectionTitle}>What you'll walk away with</h2>
         <div className={styles.valueGrid}>
           <div className={styles.valueCard}>
-            <span className={styles.valueIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 6v6l4 2" />
-              </svg>
-            </span>
+            <span className={styles.valueEmoji}>&#x1F52D;</span>
             <h3 className={styles.valueTitle}>Clarity</h3>
             <p className={styles.valueDesc}>
               Complex trends distilled into 5-minute stories you can act on Monday morning.
             </p>
           </div>
           <div className={styles.valueCard}>
-            <span className={styles.valueIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-            </span>
+            <span className={styles.valueEmoji}>&#x26A1;</span>
             <h3 className={styles.valueTitle}>Energy</h3>
             <p className={styles.valueDesc}>
-              Fast-paced, no filler. Every speaker has exactly 5 minutes to make you think differently.
+              Fast-paced, no filler. Every speaker has exactly 5 minutes to change how you think.
             </p>
           </div>
           <div className={styles.valueCard}>
-            <span className={styles.valueIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </span>
+            <span className={styles.valueEmoji}>&#x1F91D;</span>
             <h3 className={styles.valueTitle}>People</h3>
             <p className={styles.valueDesc}>
               Builders, founders, and dreamers in one room. The conversations after are as good as the talks.
@@ -144,21 +142,22 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
 
       {/* How it works */}
       <section id="how-it-works" className={styles.howSection}>
-        <h2 className={styles.sectionTitle}>How it works</h2>
+        <h2 className={styles.sectionTitle}>The format</h2>
         <p className={styles.howLine}>
-          Each speaker gets 20 slides, auto-advancing every 15 seconds. No rambling, no fluff—just the story.
+          Each speaker tells a story from 2035. <strong>20 slides, auto-advancing every 15 seconds.</strong> No rambling, no fluff. Optimistic or dystopian — you decide what to believe.
         </p>
-        <span className={styles.formatBadge}>20 x 15</span>
+        <span className={styles.formatBadge}>20 x 15s</span>
+        <p className={styles.howSubline}>Stories, not panels.</p>
       </section>
 
       {/* Speaker Lineup */}
       {event.presentations.length > 0 && (
         <section id="speakers" className={styles.speakersSection}>
-          <h2 className={styles.sectionTitle}>Story Lineup</h2>
+          <h2 className={styles.sectionTitle}>Tonight's stories</h2>
           <div className={styles.speakerGrid}>
             {event.presentations.map((pres, index) => {
               const isDystopian = pres.storyTone === 'dystopian' || pres.storyTone === 'black';
-              const toneEmoji = isDystopian ? '🌑' : '☀️';
+              const toneEmoji = isDystopian ? '\uD83C\uDF11' : '\u2600\uFE0F';
               const toneLabel = isDystopian ? 'Dystopian' : 'Optimistic';
               return (
                 <div key={index} className={styles.speakerCard}>
@@ -213,16 +212,27 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
         </section>
       )}
 
+      {/* Bottom CTA */}
+      {event.link && (
+        <section className={styles.bottomCta}>
+          <h2 className={styles.bottomCtaHeadline}>Ready to see what's coming?</h2>
+          <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.ctaPrimary}>
+            Reserve a seat
+          </a>
+        </section>
+      )}
+
       {/* Footer */}
       <footer className={styles.footer}>
-        <span className={styles.footerBrand}>2035.VC</span>
+        <span className={styles.footerBrand}>Cafe2035</span>
+        <span className={styles.footerTagline}>See the future. Sleep better.</span>
       </footer>
 
       {/* Mobile sticky CTA */}
       {event.link && (
         <div className={styles.mobileStickyBar}>
           <button className={styles.mobileStickyButton} onClick={scrollToReserve}>
-            Reserve a seat
+            I'm in
           </button>
         </div>
       )}
