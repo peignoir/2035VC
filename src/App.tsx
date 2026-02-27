@@ -1,197 +1,48 @@
-import { useState, useCallback, useEffect } from 'react';
-import type { AppScreen, ShareableEvent } from './types';
-import { parseShareUrl, parseSlug } from './lib/shareUrl';
-import { putSharedEvent, getSharedEvent } from './lib/db';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AdminGuard } from './components/AdminGuard';
 import { EventsListScreen } from './components/EventsListScreen';
 import { EventSetupScreen } from './components/EventSetupScreen';
 import { EventRunScreen } from './components/EventRunScreen';
-import { EventLandingScreen } from './components/EventLandingScreen';
+import { EventLandingPage } from './components/EventLandingPage';
+import { LegacyRedirect } from './components/LegacyRedirect';
 import styles from './App.module.css';
 
-const ADMIN_PASSWORD = 'pofpof';
-const ADMIN_SESSION_KEY = 'admin_unlocked';
-
-function App() {
-  const [screen, setScreen] = useState<AppScreen>('events-list');
-  const [activeEventId, setActiveEventId] = useState<string | null>(null);
-  const [sharedEvent, setSharedEvent] = useState<ShareableEvent | null>(null);
-  const [landingLogoUrl, setLandingLogoUrl] = useState<string | null>(null);
-  const [checkingHash, setCheckingHash] = useState(true);
-  const [adminUnlocked, setAdminUnlocked] = useState(() => sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [passwordError, setPasswordError] = useState(false);
-
-  const handlePasswordSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordInput === ADMIN_PASSWORD) {
-      setAdminUnlocked(true);
-      sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-      setPasswordInput('');
-      setPasswordError(false);
-    } else {
-      setPasswordError(true);
-    }
-  }, [passwordInput]);
-
-  // On mount, check if the URL hash contains shared event data
-  useEffect(() => {
-    (async () => {
-      const hash = window.location.hash;
-
-      // 1. Full share URL with compressed data — decode, cache, clean URL
-      const parsed = await parseShareUrl(hash);
-      if (parsed) {
-        const { event, slug } = parsed;
-        setSharedEvent(event);
-        setScreen('event-landing');
-        // Cache for future clean-URL visits
-        putSharedEvent(slug, event).catch(() => {});
-        // Replace ugly URL with clean slug
-        const cleanHash = `#/${slug}`;
-        history.replaceState(null, '', `${window.location.pathname}${window.location.search}${cleanHash}`);
-        setCheckingHash(false);
-        return;
-      }
-
-      // 2. Clean slug URL — look up cached event, then try static JSON
-      const slug = parseSlug(hash);
-      if (slug) {
-        const cached = await getSharedEvent(slug);
-        if (cached) {
-          setSharedEvent(cached);
-          setScreen('event-landing');
-          setCheckingHash(false);
-          return;
-        }
-        // Try fetching published static JSON from GitHub Pages
-        try {
-          const resp = await fetch(`${import.meta.env.BASE_URL}events/${slug}.json`);
-          if (resp.ok) {
-            const event = await resp.json() as ShareableEvent;
-            putSharedEvent(slug, event).catch(() => {});
-            setSharedEvent(event);
-            setScreen('event-landing');
-            setCheckingHash(false);
-            return;
-          }
-        } catch { /* network error, fall through */ }
-        setSharedEvent(null);
-        setScreen('event-not-found');
-        setCheckingHash(false);
-        return;
-      }
-
-      // 3. No share URL — fall through to admin screens
-      setCheckingHash(false);
-    })();
-  }, []);
-
-  const handleCreateEvent = useCallback(() => {
-    const id = crypto.randomUUID();
-    setActiveEventId(id);
-    setScreen('event-setup');
-  }, []);
-
-  const handleSelectEvent = useCallback((id: string) => {
-    setActiveEventId(id);
-    setScreen('event-setup');
-  }, []);
-
-  const handleBackToList = useCallback(() => {
-    setActiveEventId(null);
-    setScreen('events-list');
-    window.location.hash = '';
-  }, []);
-
-  const handleRunEvent = useCallback((id: string) => {
-    setActiveEventId(id);
-    setScreen('event-run');
-  }, []);
-
-  const handleExitRun = useCallback(() => {
-    setScreen('event-setup');
-  }, []);
-
-  const handleOpenLanding = useCallback((event: ShareableEvent, slug: string, logoUrl?: string) => {
-    setSharedEvent(event);
-    setLandingLogoUrl(logoUrl ?? null);
-    setScreen('event-landing');
-    putSharedEvent(slug, event).catch(() => {});
-    window.location.hash = `#/${slug}`;
-  }, []);
-
-
-  if (checkingHash) {
-    return <div className={styles.app} />;
-  }
-
-  // Landing page is public, admin screens require password
-  if (screen === 'event-landing' && sharedEvent) {
-    return (
-      <div className={styles.app}>
-        <EventLandingScreen event={sharedEvent} logoUrl={landingLogoUrl} />
-      </div>
-    );
-  }
-
-  if (screen === 'event-not-found') {
-    return (
-      <div className={styles.app}>
-        <div className={styles.passwordGate}>
-          <h2 className={styles.passwordTitle}>Event not found</h2>
-          <p style={{ color: '#999', textAlign: 'center' }}>
-            Ask the organizer for a share link to open this event on this device.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!adminUnlocked) {
-    return (
-      <div className={styles.app}>
-        <div className={styles.passwordGate}>
-          <form className={styles.passwordForm} onSubmit={handlePasswordSubmit}>
-            <h2 className={styles.passwordTitle}>Admin Access</h2>
-            <input
-              className={`${styles.passwordInput} ${passwordError ? styles.passwordInputError : ''}`}
-              type="password"
-              value={passwordInput}
-              onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
-              placeholder="Password"
-              autoFocus
-            />
-            <button className={styles.passwordButton} type="submit">Enter</button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
+function NotFound() {
   return (
     <div className={styles.app}>
-      {screen === 'events-list' && (
-        <EventsListScreen
-          onSelectEvent={handleSelectEvent}
-          onCreateEvent={handleCreateEvent}
-          onRunEvent={handleRunEvent}
-          onOpenLanding={handleOpenLanding}
-        />
-      )}
-      {screen === 'event-setup' && activeEventId && (
-        <EventSetupScreen
-          eventId={activeEventId}
-          onBack={handleBackToList}
-          onOpenLanding={handleOpenLanding}
-        />
-      )}
-      {screen === 'event-run' && activeEventId && (
-        <EventRunScreen
-          eventId={activeEventId}
-          onExit={handleExitRun}
-        />
-      )}
+      <div className={styles.passwordGate}>
+        <h2 className={styles.passwordTitle}>Page not found</h2>
+        <p style={{ color: '#999', textAlign: 'center' }}>
+          Check the URL or ask the organizer for a share link.
+        </p>
+      </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <HashRouter>
+      <Routes>
+        {/* Public event landing page */}
+        <Route path="/:city/:date" element={<EventLandingPage />} />
+
+        {/* Legacy URL formats — redirect to clean URLs */}
+        <Route path="/live/*" element={<LegacyRedirect />} />
+        <Route path="/event/*" element={<LegacyRedirect />} />
+
+        {/* Admin routes (password-gated) */}
+        <Route path="/admin" element={<AdminGuard />}>
+          <Route index element={<EventsListScreen />} />
+          <Route path="events/:eventId" element={<EventSetupScreen />} />
+          <Route path="events/:eventId/run" element={<EventRunScreen />} />
+        </Route>
+
+        {/* Default: redirect root to admin */}
+        <Route path="/" element={<Navigate to="/admin" replace />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </HashRouter>
   );
 }
 

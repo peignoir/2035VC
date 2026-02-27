@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import type { IgniteEvent, EventPresentation, LoadedDeck } from '../types';
 import { getEvent, getEventPresentations, getLogoBlob, getPdfBlob, putRecordingBlob, getRecordingBlob, deleteRecordingBlob } from '../lib/db';
 import { renderPdfFromBlob } from '../lib/pdfRenderer';
@@ -11,12 +12,9 @@ import styles from './EventRunScreen.module.css';
 
 type RunState = 'loading' | 'logo-splash' | 'rendering' | 'presenting';
 
-interface EventRunScreenProps {
-  eventId: string;
-  onExit: () => void;
-}
-
-export function EventRunScreen({ eventId, onExit }: EventRunScreenProps) {
+export function EventRunScreen() {
+  const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const { exitFullscreen } = useFullscreen();
 
@@ -37,6 +35,7 @@ export function EventRunScreen({ eventId, onExit }: EventRunScreenProps) {
 
   // Load event data on mount
   useEffect(() => {
+    if (!eventId) return;
     let cancelled = false;
     (async () => {
       const ev = await getEvent(eventId);
@@ -284,8 +283,8 @@ export function EventRunScreen({ eventId, onExit }: EventRunScreenProps) {
     if (currentDeck) {
       currentDeck.slides.forEach((s) => URL.revokeObjectURL(s.objectUrl));
     }
-    exitFullscreen().then(onExit);
-  }, [currentDeck, exitFullscreen, onExit]);
+    exitFullscreen().then(() => navigate(`/admin/events/${eventId}`));
+  }, [currentDeck, exitFullscreen, navigate, eventId]);
 
   const eventName = event?.name ?? '';
 
