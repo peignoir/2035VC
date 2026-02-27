@@ -147,10 +147,13 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
       <section id="how-it-works" className={styles.howSection}>
         <h2 className={styles.sectionTitle}>The format</h2>
         <p className={styles.howLine}>
-          Each speaker paints a scene from 2035. <strong>20 slides, auto-advancing every 15 seconds.</strong> No rambling. No filler. Optimistic or dystopian — you decide what to believe.
+          Each speaker gets 5 minutes to show you their vision of 2035 — <strong>20 AI-generated images, auto-advancing every 15 seconds.</strong> No rambling, no filler. Just the story.
         </p>
-        <span className={styles.formatBadge}>20 x 15s</span>
-        <p className={styles.howSubline}>Stories, not panels. Visions, not predictions.</p>
+        <span className={styles.formatBadge}>5 min</span>
+        <p className={styles.howLine}>
+          Think less slideshow, more <strong>sci-fi short film</strong>. Our speakers craft their futures with AI-generated visuals, audio, and narrative — not AI slop, but something closer to an episode of your favorite show. Optimistic or dystopian, you decide what to believe.
+        </p>
+        <p className={styles.howSubline}>The story is what matters. AI is how they bring it to life.</p>
       </section>
 
       {/* Speaker Lineup */}
