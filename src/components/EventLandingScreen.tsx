@@ -71,7 +71,7 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
               See <span className={styles.accent}>2035</span> before it arrives.
             </h1>
             <p className={styles.subhead}>
-              Tonight we open a window into 2035. A world where AI and robots have reshaped how we work, learn, create, and live. Not a prediction. Not a trend report. <span className={styles.accent}>A vision.</span> The future made visible, right in front of you.
+              Enter an open window into 2035 — a world where AI and robotics have reshaped how we work, learn, create, and live. Not a prediction. Not a trend report. <span className={styles.accent}>A vision.</span> Told in five-minute stories by the founders, artists, scientists, and builders who are making it real.
             </p>
             <div className={styles.ctaRow}>
               {event.link && (
@@ -102,39 +102,42 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
       {/* What is Cafe2035 */}
       <section id="what" className={styles.whatSection}>
         <div className={styles.whatContent}>
-          <h2 className={styles.whatHeadline}>An AI prepper meetup.</h2>
+          <h2 className={styles.whatHeadline}>The world's first AI prepper meetup.</h2>
           <p className={styles.whatBody}>
-            Cafe2035 is a worldwide gathering of people who refuse to be caught off guard by AI and want to see 2035 before it arrives. Over morning coffee or late-night drinks, in cities across the globe.
+            Cafe2035 brings together creative writers, entrepreneurs, AI researchers, designers, and anyone brave enough to imagine what's next. Over morning coffee or late-night drinks, in cities across the globe, we stage one question: <em>what does 2035 actually look like?</em>
+          </p>
+          <p className={styles.whatBody}>
+            Every voice gets the same stage. A sci-fi novelist shares a vision alongside a robotics founder. A teacher alongside a venture capitalist. The diversity is the point — because the future won't be built by one kind of person.
           </p>
           <p className={styles.whatPunch}>
-            Whatever is coming, you'll be ready <span className={styles.accent}>(and sleep better)</span>.
+            Whatever is coming, you'll see it first <span className={styles.accent}>(and sleep better)</span>.
           </p>
         </div>
       </section>
 
       {/* What you'll walk away with */}
       <section className={styles.valueSection}>
-        <h2 className={styles.sectionTitle}>What you'll walk away with</h2>
+        <h2 className={styles.sectionTitle}>What you walk away with</h2>
         <div className={styles.valueGrid}>
           <div className={styles.valueCard}>
             <span className={styles.valueEmoji}>&#x1F52D;</span>
             <h3 className={styles.valueTitle}>Clarity</h3>
             <p className={styles.valueDesc}>
-              Complex trends distilled into 5-minute stories you can act on Monday morning.
+              Breakthrough ideas distilled into 5-minute stories you can act on Monday morning.
             </p>
           </div>
           <div className={styles.valueCard}>
             <span className={styles.valueEmoji}>&#x26A1;</span>
             <h3 className={styles.valueTitle}>Energy</h3>
             <p className={styles.valueDesc}>
-              Fast-paced, no filler. Every speaker has exactly 5 minutes to change how you think.
+              Relentlessly paced. Every speaker gets exactly 5 minutes to change how you see the future.
             </p>
           </div>
           <div className={styles.valueCard}>
             <span className={styles.valueEmoji}>&#x1F91D;</span>
             <h3 className={styles.valueTitle}>People</h3>
             <p className={styles.valueDesc}>
-              Builders, founders, and dreamers in one room. The conversations after are as good as the talks.
+              Writers, founders, researchers, and dreamers in one room. The conversations after are as good as the talks.
             </p>
           </div>
         </div>
@@ -144,16 +147,16 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
       <section id="how-it-works" className={styles.howSection}>
         <h2 className={styles.sectionTitle}>The format</h2>
         <p className={styles.howLine}>
-          Each speaker tells a story from 2035. <strong>20 slides, auto-advancing every 15 seconds.</strong> No rambling, no fluff. Optimistic or dystopian — you decide what to believe.
+          Each speaker paints a scene from 2035. <strong>20 slides, auto-advancing every 15 seconds.</strong> No rambling. No filler. Optimistic or dystopian — you decide what to believe.
         </p>
         <span className={styles.formatBadge}>20 x 15s</span>
-        <p className={styles.howSubline}>Stories, not panels.</p>
+        <p className={styles.howSubline}>Stories, not panels. Visions, not predictions.</p>
       </section>
 
       {/* Speaker Lineup */}
       {event.presentations.length > 0 && (
         <section id="speakers" className={styles.speakersSection}>
-          <h2 className={styles.sectionTitle}>Tonight's stories</h2>
+          <h2 className={styles.sectionTitle}>The lineup</h2>
           <div className={styles.speakerGrid}>
             {event.presentations.map((pres, index) => {
               const isDystopian = pres.storyTone === 'dystopian' || pres.storyTone === 'black';
@@ -215,7 +218,7 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
       {/* Bottom CTA */}
       {event.link && (
         <section className={styles.bottomCta}>
-          <h2 className={styles.bottomCtaHeadline}>Ready to see what's coming?</h2>
+          <h2 className={styles.bottomCtaHeadline}>The future is in this room. Yours included.</h2>
           <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.ctaPrimary}>
             Reserve a seat
           </a>
