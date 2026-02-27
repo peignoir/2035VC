@@ -50,8 +50,8 @@ export function EventLandingScreen({ event, logoUrl: externalLogoUrl }: EventLan
           <span className={styles.navBrand}>Cafe2035</span>
         </div>
         <div className={styles.navRight}>
-          <a href="#how-it-works" className={styles.navLink}>How it works</a>
-          <a href="#speakers" className={styles.navLink}>Stories</a>
+          <button className={styles.navLink} onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>How it works</button>
+          <button className={styles.navLink} onClick={() => document.getElementById('speakers')?.scrollIntoView({ behavior: 'smooth' })}>Stories</button>
           {event.link && (
             <a href={event.link} target="_blank" rel="noopener noreferrer" className={styles.navCta}>
               Reserve
