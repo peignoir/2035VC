@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import type { IgniteEvent, EventPresentation, StoryTone, ShareableEvent } from '../types';
 import {
@@ -15,13 +16,10 @@ import { buildSlug } from '../lib/shareUrl';
 import { publishEvent } from '../lib/publishEvent';
 import styles from './EventSetupScreen.module.css';
 
-interface EventSetupScreenProps {
-  eventId: string;
-  onBack: () => void;
-  onOpenLanding?: (event: ShareableEvent, hash: string, logoUrl?: string) => void;
-}
+export function EventSetupScreen() {
+  const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
 
-export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupScreenProps) {
   const [event, setEvent] = useState<IgniteEvent | null>(null);
   const [presentations, setPresentations] = useState<EventPresentation[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -29,11 +27,12 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
   const [recordingUrls, setRecordingUrls] = useState<Map<string, string>>(new Map());
-  const [convertingMp4, setConvertingMp4] = useState<string | null>(null); // presId being converted
+  const [convertingMp4, setConvertingMp4] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Load event data
   useEffect(() => {
+    if (!eventId) return;
     let cancelled = false;
     (async () => {
       let ev = await getEvent(eventId);
@@ -116,7 +115,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
 
   // Logo upload
   const onLogoDrop = useCallback(async (files: File[]) => {
-    if (files.length === 0) return;
+    if (files.length === 0 || !eventId) return;
     const file = files[0];
     await putLogoBlob(eventId, file);
     if (logoUrl) URL.revokeObjectURL(logoUrl);
@@ -124,6 +123,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
   }, [eventId, logoUrl]);
 
   const handleRemoveLogo = useCallback(async () => {
+    if (!eventId) return;
     await deleteLogoBlob(eventId);
     if (logoUrl) URL.revokeObjectURL(logoUrl);
     setLogoUrl(null);
@@ -137,7 +137,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
 
   // PDF upload
   const onPdfDrop = useCallback(async (files: File[]) => {
-    if (files.length === 0) return;
+    if (files.length === 0 || !eventId) return;
     const file = files[0];
     setPdfError(null);
     setPdfLoading(true);
@@ -181,7 +181,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
     disabled: pdfLoading,
   });
 
-  // Update presentation fields (speaker name, story name)
+  // Update presentation fields
   const updatePresField = useCallback((presId: string, field: 'speakerName' | 'storyName' | 'storyTone' | 'speakerBio' | 'socialX' | 'socialInstagram' | 'socialLinkedin', value: string) => {
     setPresentations((prev) => {
       const updated = prev.map((p) =>
@@ -202,7 +202,6 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
     if (!url) return;
     const a = document.createElement('a');
     a.href = url;
-    // Name it after speaker or filename, with .webm extension
     const baseName = fileName.replace(/\.pdf$/i, '');
     a.download = `${baseName}-recording.webm`;
     document.body.appendChild(a);
@@ -210,7 +209,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
     document.body.removeChild(a);
   }, [recordingUrls]);
 
-  // Download recording as MP4 (converts via FFmpeg WASM)
+  // Download recording as MP4
   const handleDownloadMp4 = useCallback(async (presId: string, fileName: string) => {
     const url = recordingUrls.get(presId);
     if (!url) return;
@@ -259,7 +258,6 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
 
   // Delete presentation
   const handleDeletePres = useCallback(async (presId: string) => {
-    // Clean up recording URL if exists
     const recUrl = recordingUrls.get(presId);
     if (recUrl) URL.revokeObjectURL(recUrl);
     setRecordingUrls((prev) => {
@@ -273,6 +271,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
 
   // Reorder
   const handleMove = useCallback(async (index: number, direction: -1 | 1) => {
+    if (!eventId) return;
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= presentations.length) return;
     const newList = [...presentations];
@@ -283,7 +282,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
   }, [presentations, eventId]);
 
   const handleOpenPublicPage = useCallback(async () => {
-    if (!event || !onOpenLanding) return;
+    if (!event || !eventId) return;
     const shareable: ShareableEvent = {
       name: event.name,
       city: event.city,
@@ -318,8 +317,15 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       }
     }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
-    onOpenLanding(shareable, slug, freshLogoUrl);
-  }, [event, presentations, onOpenLanding, eventId]);
+    // Navigate to the public landing page with preview data in state
+    navigate(`/${shareable.city.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'event'}/${shareable.date}`, {
+      state: { previewEvent: shareable, logoUrl: freshLogoUrl },
+    });
+  }, [event, presentations, eventId, navigate]);
+
+  const handleBack = useCallback(() => {
+    navigate('/admin');
+  }, [navigate]);
 
   if (!event) {
     return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>;
@@ -328,22 +334,20 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <button className={styles.backButton} onClick={onBack}>
+        <button className={styles.backButton} onClick={handleBack}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
           Gatherings
         </button>
-        {onOpenLanding && (
-          <button className={styles.shareButton} onClick={handleOpenPublicPage}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            Public Page
-          </button>
-        )}
+        <button className={styles.shareButton} onClick={handleOpenPublicPage}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+          Public Page
+        </button>
       </header>
 
       <div className={styles.form}>
@@ -357,7 +361,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
               type="text"
               value={event.name}
               onChange={(e) => updateField('name', e.target.value)}
-              placeholder="e.g. Café 2035 Tallinn"
+              placeholder="e.g. Caf\u00e9 2035 Tallinn"
               autoFocus={!event.name}
             />
           </div>
@@ -489,8 +493,8 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
                     <div className={styles.toneRow}>
                       <span className={styles.toneRowLabel}>Story vibe</span>
                       {([
-                        ['optimistic', '☀️', 'Optimistic'],
-                        ['dystopian', '🌑', 'Dystopian'],
+                        ['optimistic', '\u2600\uFE0F', 'Optimistic'],
+                        ['dystopian', '\uD83C\uDF11', 'Dystopian'],
                       ] as [StoryTone, string, string][]).map(([tone, emoji, label]) => (
                         <button
                           key={tone}
@@ -513,7 +517,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
                     />
                     <div className={styles.socialRow}>
                       <div className={styles.socialField}>
-                        <span className={styles.socialIcon}>𝕏</span>
+                        <span className={styles.socialIcon}>{'\uD835\uDD4F'}</span>
                         <input
                           className={styles.presInput}
                           type="text"
@@ -654,7 +658,7 @@ export function EventSetupScreen({ eventId, onBack, onOpenLanding }: EventSetupS
       </div>
 
       <div className={styles.bottomActions}>
-        <button className={styles.saveButton} onClick={onBack}>
+        <button className={styles.saveButton} onClick={handleBack}>
           Save
         </button>
       </div>

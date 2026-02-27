@@ -61,7 +61,7 @@ async function pushFile(
   }
 }
 
-/** Publish event JSON and recordings to the repo. */
+/** Publish event JSON, recordings, and logo to the repo. */
 export async function publishEvent(
   slug: string,
   event: ShareableEvent,
@@ -97,7 +97,28 @@ export async function publishEvent(
     }
   }
 
-  // Publish event JSON (after recording URLs are set)
+  // Upload logo as separate file (instead of embedding as data URL)
+  if (event.logo && event.logo.startsWith('data:')) {
+    try {
+      // Extract mime type and base64 from data URL
+      const match = event.logo.match(/^data:image\/([\w+]+);base64,(.+)$/);
+      if (match) {
+        const ext = match[1] === 'svg+xml' ? 'svg' : match[1];
+        const logoContent = match[2];
+        const logoPath = `public/events/${slug}-logo.${ext}`;
+        console.log(`[Publish] Uploading logo as ${logoPath}`);
+        await pushFile(owner, repo, logoPath, logoContent, `Publish logo: ${slug}`, headers);
+        // Replace data URL with path reference
+        event.logo = `${import.meta.env.BASE_URL}events/${slug}-logo.${ext}`;
+        console.log(`[Publish] Logo uploaded successfully`);
+      }
+    } catch (e) {
+      console.error('[Publish] Failed to upload logo', e);
+      // Keep data URL as fallback if upload fails
+    }
+  }
+
+  // Publish event JSON (after recording/logo URLs are set)
   const jsonContent = btoa(unescape(encodeURIComponent(JSON.stringify(event, null, 2))));
   await pushFile(owner, repo, `public/events/${slug}.json`, jsonContent, `Publish event: ${slug}`, headers);
 }

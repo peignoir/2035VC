@@ -1,6 +1,3 @@
-// App navigation
-export type AppScreen = 'events-list' | 'event-setup' | 'event-run' | 'event-landing' | 'event-not-found';
-
 // Event data model (persisted in IndexedDB)
 export interface IgniteEvent {
   id: string;

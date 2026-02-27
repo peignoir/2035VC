@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { IgniteEvent, ShareableEvent } from '../types';
 import { getAllEvents, deleteEvent, getLogoBlob, getEventPresentations, getRecordingBlob } from '../lib/db';
 import { generateLogo } from '../lib/generateLogo';
@@ -6,14 +7,8 @@ import { buildSlug } from '../lib/shareUrl';
 import { publishEvent } from '../lib/publishEvent';
 import styles from './EventsListScreen.module.css';
 
-interface EventsListScreenProps {
-  onSelectEvent: (eventId: string) => void;
-  onCreateEvent: () => void;
-  onRunEvent: (eventId: string) => void;
-  onOpenLanding: (event: ShareableEvent, hash: string, logoUrl?: string) => void;
-}
-
-export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onOpenLanding }: EventsListScreenProps) {
+export function EventsListScreen() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<IgniteEvent[]>([]);
   const [logoUrls, setLogoUrls] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -23,7 +18,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
     const allEvents = await getAllEvents();
     setEvents(allEvents);
 
-    // Load logo thumbnails — generate one for events without an uploaded logo
+    // Load logo thumbnails
     const urls = new Map<string, string>();
     for (const event of allEvents) {
       const blob = await getLogoBlob(event.id);
@@ -64,8 +59,17 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
 
   const handleRun = useCallback((e: React.MouseEvent, eventId: string) => {
     e.stopPropagation();
-    onRunEvent(eventId);
-  }, [onRunEvent]);
+    navigate(`/admin/events/${eventId}/run`);
+  }, [navigate]);
+
+  const handleSelectEvent = useCallback((eventId: string) => {
+    navigate(`/admin/events/${eventId}`);
+  }, [navigate]);
+
+  const handleCreateEvent = useCallback(() => {
+    const id = crypto.randomUUID();
+    navigate(`/admin/events/${id}`);
+  }, [navigate]);
 
   const handleOpenPublicPage = useCallback(async (e: React.MouseEvent, ev: IgniteEvent) => {
     e.stopPropagation();
@@ -104,8 +108,11 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
       }
     }
     const freshLogoUrl = logoBlob ? URL.createObjectURL(logoBlob) : undefined;
-    onOpenLanding(shareable, slug, freshLogoUrl);
-  }, [onOpenLanding]);
+    const citySlug = ev.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'event';
+    navigate(`/${citySlug}/${ev.date}`, {
+      state: { previewEvent: shareable, logoUrl: freshLogoUrl },
+    });
+  }, [navigate]);
 
   function formatDate(dateStr: string): string {
     if (!dateStr) return '';
@@ -147,7 +154,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
             </svg>
           </div>
           <p className={styles.emptyText}>No gatherings yet</p>
-          <button className={styles.createButton} onClick={onCreateEvent}>
+          <button className={styles.createButton} onClick={handleCreateEvent}>
             Open a window into 2035
           </button>
         </div>
@@ -157,7 +164,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
             <div
               key={event.id}
               className={styles.card}
-              onClick={() => onSelectEvent(event.id)}
+              onClick={() => handleSelectEvent(event.id)}
             >
               <div className={styles.cardLogo}>
                 {logoUrls.has(event.id) ? (
@@ -217,7 +224,7 @@ export function EventsListScreen({ onSelectEvent, onCreateEvent, onRunEvent, onO
             </div>
           ))}
 
-          <div className={styles.newCard} onClick={onCreateEvent}>
+          <div className={styles.newCard} onClick={handleCreateEvent}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
